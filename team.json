@@ -1,0 +1,31 @@
+{
+  "team_number": "T0028",
+
+  "group_lead": {
+    "name": "Group Lead Name",
+    "enrollment_no": "Group Lead Enrollment No.",
+    "github": "Group Lead GitHub Username"
+  },
+
+  "members": [
+    {
+      "name": "Shivansh Pandey",
+      "enrollment_no": "2501010698",
+      "github": "pandeyshivansh-tech"
+    },
+    {
+      "name": "Member 3 Name",
+      "enrollment_no": "Member 3 Enrollment No.",
+      "github": "Member 3 GitHub Username"
+    },
+    {
+      "name": "Member 4 Name",
+      "enrollment_no": "Member 4 Enrollment No.",
+      "github": "Member 4 GitHub Username"
+    }
+  ],
+
+  "postgres_version": "18.6",
+
+  "laptop_used_for_benchmarks": "MacBook Pro, Apple M4, 16GB RAM"
+}

@@ -23,11 +23,11 @@
 | Role | Name | Enrollment No. | GitHub Username |
 |------|------|----------------|-----------------|
 | Group Lead | | | |
-| Member 2 | | | |
+| Member 2 | Shivansh Pandey | 2501010698 | pandeyshivansh-tech |
 | Member 3 | | | |
 | Member 4 | | | |
 
-**Team No.:** ____ · **Section:** ____ · **Repository URL:** ____
+**Team No.:** T0028 · **Section:** B · **Repository URL:** https://github.com/amanmishra20feb/DE_Project_2026
 
 ---
 

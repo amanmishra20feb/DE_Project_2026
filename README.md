@@ -22,10 +22,10 @@
 
 | Role | Name | Enrollment No. | GitHub Username |
 |------|------|----------------|-----------------|
-| Group Lead | | | |
+| Group Lead | Aman Mishra | 2501010050 | amanmishra20feb |
 | Member 2 | Shivansh Pandey | 2501010698 | pandeyshivansh-tech |
 | Member 3 | | | |
-| Member 4 | | | |
+| Member 4 | Prashant | 2501010345 | @prashantofficial627-hash |
 
 **Team No.:** T0028 · **Section:** B · **Repository URL:** https://github.com/amanmishra20feb/DE_Project_2026
 

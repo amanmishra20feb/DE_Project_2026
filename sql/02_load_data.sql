@@ -1,13 +1,7 @@
--- =====================================================================
--- sql/02_load_data.sql : load the 10 seed CSV files (Team T0028)
---
--- Run from the REPOSITORY ROOT (so the relative paths below resolve) after
--- unzipping seed_data.zip into ./seed_data/ (the CSV files are never committed):
---     psql -d <db> -f sql/01_schema.sql
---     psql -d <db> -f sql/02_load_data.sql
---
--- Load order: parents before children, so every foreign key is satisfied.
--- =====================================================================
+-- Run from the repository root after unzipping seed_data.zip into ./seed_data/ (the CSV files are never committed):
+--   psql -d <db> -f sql/01_schema.sql && psql -d <db> -f sql/02_load_data.sql
+-- Parents are loaded before children so every foreign key is satisfied.
+
 \set ON_ERROR_STOP on
 SET search_path TO spotify;
 

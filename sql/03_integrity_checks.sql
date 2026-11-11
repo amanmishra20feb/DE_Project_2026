@@ -1,11 +1,8 @@
--- =====================================================================
--- sql/03_integrity_checks.sql : checks that the loaded data is consistent.
--- Each row = one check. "violations" must be 0 for the checks in section A.
--- Section B lists data problems we FOUND (non-zero on purpose, explained in
--- docs/02_schema_design.md). They are NOT turned into CHECK constraints,
--- because the seed data would be rejected.
--- Run:  psql -d <db> -f sql/03_integrity_checks.sql
--- =====================================================================
+-- Integrity checks: run with  psql -d <db> -f sql/03_integrity_checks.sql
+-- Section A: rules the data obeys, every row must be 0.
+-- Section B: data problems we found, non-zero on purpose (explained in docs/02_schema_design.md).
+-- They are not CHECK constraints because the seed data would be rejected.
+
 SET search_path TO spotify;
 
 -- ---------------- A. rules the data must obey (expected 0) ----------------

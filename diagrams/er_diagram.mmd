@@ -1,0 +1,97 @@
+erDiagram
+    ARTISTS ||--o{ ALBUMS : "releases"
+    ALBUMS ||--|{ TRACKS : "contains"
+    TRACKS ||--|{ TRACK_ARTISTS : "credits"
+    ARTISTS ||--o{ TRACK_ARTISTS : "performs"
+    USERS ||--o{ PLAYLISTS : "owns"
+    PLAYLISTS ||--o{ PLAYLIST_TRACKS : "lists"
+    TRACKS ||--o{ PLAYLIST_TRACKS : "appears in"
+    USERS |o--o{ PLAYLIST_TRACKS : "added by"
+    USERS |o--o{ STREAMS : "plays"
+    TRACKS ||--o{ STREAMS : "is played in"
+    PLAYLISTS |o--o{ STREAMS : "played from"
+    USERS ||--o{ LIKED_TRACKS : "likes"
+    TRACKS ||--o{ LIKED_TRACKS : "liked as"
+    USERS ||--o{ ARTIST_FOLLOWS : "follows"
+    ARTISTS ||--o{ ARTIST_FOLLOWS : "followed by"
+
+    ARTISTS {
+        int artist_id PK
+        varchar artist_name
+        char country_code
+        varchar primary_genre
+        boolean is_verified
+        int monthly_listeners "derived"
+        timestamptz created_at
+    }
+    ALBUMS {
+        int album_id PK
+        int artist_id FK
+        varchar album_title
+        varchar album_type
+        date release_date
+        varchar label
+        char upc UK
+    }
+    TRACKS {
+        int track_id PK
+        int album_id FK
+        smallint disc_no
+        smallint track_no
+        varchar title
+        int duration_ms
+        boolean explicit
+        char isrc UK
+        smallint popularity
+    }
+    TRACK_ARTISTS {
+        int track_id PK, FK
+        int artist_id PK, FK
+        varchar role "PRIMARY or FEATURED"
+    }
+    USERS {
+        int user_id PK
+        varchar email UK
+        varchar display_name
+        char country_code
+        date birth_date
+        varchar subscription
+        timestamptz created_at
+    }
+    PLAYLISTS {
+        int playlist_id PK
+        int owner_user_id FK
+        varchar name
+        boolean is_public
+        boolean is_collaborative
+        timestamptz created_at
+    }
+    PLAYLIST_TRACKS {
+        int playlist_id PK, FK
+        smallint position PK
+        int track_id FK
+        int added_by_user_id FK "nullable"
+        timestamptz added_at
+    }
+    STREAMS {
+        bigint stream_id PK
+        int user_id FK "nullable"
+        int track_id FK
+        timestamptz started_at
+        int ms_played
+        varchar platform
+        varchar source_type
+        int playlist_id FK "nullable"
+        boolean skipped "derived from ms_played"
+        boolean offline
+    }
+    LIKED_TRACKS {
+        int user_id PK, FK
+        int track_id PK, FK
+        timestamptz liked_at
+    }
+    ARTIST_FOLLOWS {
+        int user_id PK, FK
+        int artist_id PK, FK
+        timestamptz followed_at
+    }

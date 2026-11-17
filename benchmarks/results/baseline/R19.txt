@@ -1,0 +1,129 @@
+=== R19 run 1 ===
+Sort  (cost=4763243.33..4763244.16 rows=334 width=38) (actual time=8508.185..8508.195 rows=334.00 loops=1)
+  Sort Key: ((SubPlan 1)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=2007372
+  ->  Seq Scan on artists ar  (cost=0.00..4763229.33 rows=334 width=38) (actual time=29.031..8508.073 rows=334.00 loops=1)
+        Filter: is_verified
+        Rows Removed by Filter: 2666
+        Buffers: shared hit=2007369
+        SubPlan 1
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=12.728..12.728 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=0) (actual time=1.606..12.720 rows=207.89 loops=334)
+                      Hash Cond: (s.track_id = ta.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s  (cost=0.00..5076.00 rows=250000 width=4) (actual time=0.000..5.012 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.437..1.437 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.123..1.434 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+        SubPlan 2
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=12.743..12.743 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=8) (actual time=1.622..12.735 rows=207.89 loops=334)
+                      Hash Cond: (s_1.track_id = ta_1.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s_1  (cost=0.00..5076.00 rows=250000 width=12) (actual time=0.000..5.012 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.452..1.452 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta_1  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.124..1.449 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+Planning:
+  Buffers: shared hit=246
+Planning Time: 0.358 ms
+Execution Time: 8508.496 ms
+=== R19 run 2 ===
+Sort  (cost=4763243.33..4763244.16 rows=334 width=38) (actual time=8673.888..8673.900 rows=334.00 loops=1)
+  Sort Key: ((SubPlan 1)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=2007372
+  ->  Seq Scan on artists ar  (cost=0.00..4763229.33 rows=334 width=38) (actual time=29.356..8673.734 rows=334.00 loops=1)
+        Filter: is_verified
+        Rows Removed by Filter: 2666
+        Buffers: shared hit=2007369
+        SubPlan 1
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=13.030..13.030 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=0) (actual time=1.650..13.021 rows=207.89 loops=334)
+                      Hash Cond: (s.track_id = ta.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s  (cost=0.00..5076.00 rows=250000 width=4) (actual time=0.000..5.141 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.476..1.476 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.126..1.473 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+        SubPlan 2
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=12.937..12.937 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=8) (actual time=1.648..12.927 rows=207.89 loops=334)
+                      Hash Cond: (s_1.track_id = ta_1.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s_1  (cost=0.00..5076.00 rows=250000 width=12) (actual time=0.000..5.082 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.474..1.474 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta_1  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.127..1.471 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+Planning:
+  Buffers: shared hit=246
+Planning Time: 0.431 ms
+Execution Time: 8673.949 ms
+=== R19 run 3 ===
+Sort  (cost=4763243.33..4763244.16 rows=334 width=38) (actual time=8631.413..8631.422 rows=334.00 loops=1)
+  Sort Key: ((SubPlan 1)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=2007372
+  ->  Seq Scan on artists ar  (cost=0.00..4763229.33 rows=334 width=38) (actual time=32.391..8631.306 rows=334.00 loops=1)
+        Filter: is_verified
+        Rows Removed by Filter: 2666
+        Buffers: shared hit=2007369
+        SubPlan 1
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=12.920..12.920 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=0) (actual time=1.636..12.911 rows=207.89 loops=334)
+                      Hash Cond: (s.track_id = ta.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s  (cost=0.00..5076.00 rows=250000 width=4) (actual time=0.000..5.090 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.464..1.464 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.125..1.461 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+        SubPlan 2
+          ->  Aggregate  (cost=7130.48..7130.49 rows=1 width=8) (actual time=12.921..12.921 rows=1.00 loops=334)
+                Buffers: shared hit=1003670
+                ->  Hash Join  (cost=1397.94..7130.23 rows=101 width=8) (actual time=1.640..12.912 rows=207.89 loops=334)
+                      Hash Cond: (s_1.track_id = ta_1.track_id)
+                      Buffers: shared hit=1003670
+                      ->  Seq Scan on streams s_1  (cost=0.00..5076.00 rows=250000 width=12) (actual time=0.000..5.094 rows=250000.00 loops=334)
+                            Buffers: shared hit=860384
+                      ->  Hash  (cost=1397.61..1397.61 rows=26 width=4) (actual time=1.467..1.467 rows=56.64 loops=334)
+                            Buckets: 1024  Batches: 1  Memory Usage: 29kB
+                            Buffers: shared hit=143286
+                            ->  Seq Scan on track_artists ta_1  (cost=0.00..1397.61 rows=26 width=4) (actual time=0.125..1.464 rows=56.64 loops=334)
+                                  Filter: (artist_id = ar.artist_id)
+                                  Rows Removed by Filter: 77432
+                                  Buffers: shared hit=143286
+Planning:
+  Buffers: shared hit=246
+Planning Time: 0.422 ms
+Execution Time: 8631.471 ms

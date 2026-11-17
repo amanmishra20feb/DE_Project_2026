@@ -1,0 +1,117 @@
+=== R09 run 1 ===
+Limit  (cost=6158.30..6158.31 rows=1 width=54) (actual time=5.312..5.928 rows=4.00 loops=1)
+  Buffers: shared hit=2608 read=1
+  ->  Sort  (cost=6158.30..6158.31 rows=1 width=54) (actual time=5.311..5.927 rows=4.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=2608 read=1
+        ->  GroupAggregate  (cost=6158.26..6158.29 rows=1 width=54) (actual time=5.302..5.919 rows=4.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=2605 read=1
+              ->  Sort  (cost=6158.26..6158.27 rows=1 width=26) (actual time=5.296..5.912 rows=4.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=2605 read=1
+                    ->  Nested Loop  (cost=1000.57..6158.25 rows=1 width=26) (actual time=1.971..5.902 rows=4.00 loops=1)
+                          Buffers: shared hit=2599 read=1
+                          ->  Nested Loop  (cost=1000.29..6157.95 rows=1 width=8) (actual time=1.966..5.885 rows=4.00 loops=1)
+                                Buffers: shared hit=2588
+                                ->  Gather  (cost=1000.00..6149.63 rows=1 width=8) (actual time=1.958..5.852 rows=4.00 loops=1)
+                                      Workers Planned: 1
+                                      Workers Launched: 1
+                                      Buffers: shared hit=2576
+                                      ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=1 width=8) (actual time=1.166..4.225 rows=2.00 loops=2)
+                                            Filter: ((user_id = 1038) AND (EXTRACT(year FROM started_at) = '2025'::numeric))
+                                            Rows Removed by Filter: 124998
+                                            Buffers: shared hit=2576
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.29..8.31 rows=1 width=8) (actual time=0.007..0.007 rows=1.00 loops=4)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Index Searches: 4
+                                      Buffers: shared hit=12
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.004..0.004 rows=1.00 loops=4)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 4
+                                Buffers: shared hit=11 read=1
+Planning:
+  Buffers: shared hit=199 read=2
+Planning Time: 0.615 ms
+Execution Time: 5.961 ms
+=== R09 run 2 ===
+Limit  (cost=6158.30..6158.31 rows=1 width=54) (actual time=4.915..5.487 rows=4.00 loops=1)
+  Buffers: shared hit=2609
+  ->  Sort  (cost=6158.30..6158.31 rows=1 width=54) (actual time=4.915..5.486 rows=4.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=2609
+        ->  GroupAggregate  (cost=6158.26..6158.29 rows=1 width=54) (actual time=4.906..5.479 rows=4.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=2606
+              ->  Sort  (cost=6158.26..6158.27 rows=1 width=26) (actual time=4.901..5.472 rows=4.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=2606
+                    ->  Nested Loop  (cost=1000.57..6158.25 rows=1 width=26) (actual time=1.615..5.464 rows=4.00 loops=1)
+                          Buffers: shared hit=2600
+                          ->  Nested Loop  (cost=1000.29..6157.95 rows=1 width=8) (actual time=1.610..5.453 rows=4.00 loops=1)
+                                Buffers: shared hit=2588
+                                ->  Gather  (cost=1000.00..6149.63 rows=1 width=8) (actual time=1.604..5.435 rows=4.00 loops=1)
+                                      Workers Planned: 1
+                                      Workers Launched: 1
+                                      Buffers: shared hit=2576
+                                      ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=1 width=8) (actual time=0.940..3.977 rows=2.00 loops=2)
+                                            Filter: ((user_id = 1038) AND (EXTRACT(year FROM started_at) = '2025'::numeric))
+                                            Rows Removed by Filter: 124998
+                                            Buffers: shared hit=2576
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.29..8.31 rows=1 width=8) (actual time=0.004..0.004 rows=1.00 loops=4)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Index Searches: 4
+                                      Buffers: shared hit=12
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=4)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 4
+                                Buffers: shared hit=12
+Planning:
+  Buffers: shared hit=201
+Planning Time: 0.380 ms
+Execution Time: 5.514 ms
+=== R09 run 3 ===
+Limit  (cost=6158.30..6158.31 rows=1 width=54) (actual time=4.837..5.461 rows=4.00 loops=1)
+  Buffers: shared hit=2609
+  ->  Sort  (cost=6158.30..6158.31 rows=1 width=54) (actual time=4.836..5.460 rows=4.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=2609
+        ->  GroupAggregate  (cost=6158.26..6158.29 rows=1 width=54) (actual time=4.823..5.448 rows=4.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=2606
+              ->  Sort  (cost=6158.26..6158.27 rows=1 width=26) (actual time=4.818..5.442 rows=4.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=2606
+                    ->  Nested Loop  (cost=1000.57..6158.25 rows=1 width=26) (actual time=1.636..5.434 rows=4.00 loops=1)
+                          Buffers: shared hit=2600
+                          ->  Nested Loop  (cost=1000.29..6157.95 rows=1 width=8) (actual time=1.632..5.418 rows=4.00 loops=1)
+                                Buffers: shared hit=2588
+                                ->  Gather  (cost=1000.00..6149.63 rows=1 width=8) (actual time=1.626..5.400 rows=4.00 loops=1)
+                                      Workers Planned: 1
+                                      Workers Launched: 1
+                                      Buffers: shared hit=2576
+                                      ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=1 width=8) (actual time=1.267..3.926 rows=2.00 loops=2)
+                                            Filter: ((user_id = 1038) AND (EXTRACT(year FROM started_at) = '2025'::numeric))
+                                            Rows Removed by Filter: 124998
+                                            Buffers: shared hit=2576
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.29..8.31 rows=1 width=8) (actual time=0.004..0.004 rows=1.00 loops=4)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Index Searches: 4
+                                      Buffers: shared hit=12
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.004..0.004 rows=1.00 loops=4)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 4
+                                Buffers: shared hit=12
+Planning:
+  Buffers: shared hit=201
+Planning Time: 0.367 ms
+Execution Time: 5.486 ms

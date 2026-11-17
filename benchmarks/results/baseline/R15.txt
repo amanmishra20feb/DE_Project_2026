@@ -1,0 +1,111 @@
+=== R15 run 1 ===
+Limit  (cost=1841.07..1841.09 rows=10 width=30) (actual time=6.194..6.195 rows=10.00 loops=1)
+  Buffers: shared hit=1069 read=494
+  ->  Sort  (cost=1841.07..1842.03 rows=384 width=30) (actual time=6.193..6.194 rows=10.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        Buffers: shared hit=1069 read=494
+        ->  GroupAggregate  (cost=1825.09..1832.77 rows=384 width=30) (actual time=6.140..6.174 rows=269.00 loops=1)
+              Group Key: f2.artist_id, ar.artist_name
+              Buffers: shared hit=1066 read=494
+              ->  Sort  (cost=1825.09..1826.05 rows=384 width=22) (actual time=6.135..6.141 rows=309.00 loops=1)
+                    Sort Key: f2.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 37kB
+                    Buffers: shared hit=1066 read=494
+                    ->  Nested Loop  (cost=0.57..1808.61 rows=384 width=22) (actual time=0.830..6.096 rows=309.00 loops=1)
+                          Buffers: shared hit=1060 read=494
+                          ->  Nested Loop  (cost=0.29..1693.49 rows=384 width=4) (actual time=0.590..4.703 rows=309.00 loops=1)
+                                Buffers: shared hit=157 read=470
+                                ->  Seq Scan on artist_follows f1  (cost=0.00..1251.76 rows=130 width=8) (actual time=0.308..2.133 rows=124.00 loops=1)
+                                      Filter: (artist_id = 33)
+                                      Rows Removed by Filter: 69777
+                                      Buffers: shared read=378
+                                ->  Index Only Scan using pk_artist_follows on artist_follows f2  (cost=0.29..3.37 rows=3 width=8) (actual time=0.020..0.021 rows=2.49 loops=124)
+                                      Index Cond: (user_id = f1.user_id)
+                                      Filter: (artist_id <> f1.artist_id)
+                                      Rows Removed by Filter: 1
+                                      Heap Fetches: 0
+                                      Index Searches: 124
+                                      Buffers: shared hit=157 read=92
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.004..0.004 rows=1.00 loops=309)
+                                Index Cond: (artist_id = f2.artist_id)
+                                Index Searches: 309
+                                Buffers: shared hit=903 read=24
+Planning:
+  Buffers: shared hit=162 read=2
+Planning Time: 0.601 ms
+Execution Time: 6.224 ms
+=== R15 run 2 ===
+Limit  (cost=1841.07..1841.09 rows=10 width=30) (actual time=1.802..1.803 rows=10.00 loops=1)
+  Buffers: shared hit=1563
+  ->  Sort  (cost=1841.07..1842.03 rows=384 width=30) (actual time=1.802..1.802 rows=10.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        Buffers: shared hit=1563
+        ->  GroupAggregate  (cost=1825.09..1832.77 rows=384 width=30) (actual time=1.749..1.783 rows=269.00 loops=1)
+              Group Key: f2.artist_id, ar.artist_name
+              Buffers: shared hit=1560
+              ->  Sort  (cost=1825.09..1826.05 rows=384 width=22) (actual time=1.745..1.751 rows=309.00 loops=1)
+                    Sort Key: f2.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 37kB
+                    Buffers: shared hit=1560
+                    ->  Nested Loop  (cost=0.57..1808.61 rows=384 width=22) (actual time=0.063..1.708 rows=309.00 loops=1)
+                          Buffers: shared hit=1554
+                          ->  Nested Loop  (cost=0.29..1693.49 rows=384 width=4) (actual time=0.058..1.520 rows=309.00 loops=1)
+                                Buffers: shared hit=627
+                                ->  Seq Scan on artist_follows f1  (cost=0.00..1251.76 rows=130 width=8) (actual time=0.011..1.332 rows=124.00 loops=1)
+                                      Filter: (artist_id = 33)
+                                      Rows Removed by Filter: 69777
+                                      Buffers: shared hit=378
+                                ->  Index Only Scan using pk_artist_follows on artist_follows f2  (cost=0.29..3.37 rows=3 width=8) (actual time=0.001..0.001 rows=2.49 loops=124)
+                                      Index Cond: (user_id = f1.user_id)
+                                      Filter: (artist_id <> f1.artist_id)
+                                      Rows Removed by Filter: 1
+                                      Heap Fetches: 0
+                                      Index Searches: 124
+                                      Buffers: shared hit=249
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.001..0.001 rows=1.00 loops=309)
+                                Index Cond: (artist_id = f2.artist_id)
+                                Index Searches: 309
+                                Buffers: shared hit=927
+Planning:
+  Buffers: shared hit=164
+Planning Time: 0.358 ms
+Execution Time: 1.830 ms
+=== R15 run 3 ===
+Limit  (cost=1841.07..1841.09 rows=10 width=30) (actual time=1.765..1.766 rows=10.00 loops=1)
+  Buffers: shared hit=1563
+  ->  Sort  (cost=1841.07..1842.03 rows=384 width=30) (actual time=1.764..1.765 rows=10.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 25kB
+        Buffers: shared hit=1563
+        ->  GroupAggregate  (cost=1825.09..1832.77 rows=384 width=30) (actual time=1.712..1.746 rows=269.00 loops=1)
+              Group Key: f2.artist_id, ar.artist_name
+              Buffers: shared hit=1560
+              ->  Sort  (cost=1825.09..1826.05 rows=384 width=22) (actual time=1.708..1.713 rows=309.00 loops=1)
+                    Sort Key: f2.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 37kB
+                    Buffers: shared hit=1560
+                    ->  Nested Loop  (cost=0.57..1808.61 rows=384 width=22) (actual time=0.060..1.676 rows=309.00 loops=1)
+                          Buffers: shared hit=1554
+                          ->  Nested Loop  (cost=0.29..1693.49 rows=384 width=4) (actual time=0.056..1.499 rows=309.00 loops=1)
+                                Buffers: shared hit=627
+                                ->  Seq Scan on artist_follows f1  (cost=0.00..1251.76 rows=130 width=8) (actual time=0.010..1.318 rows=124.00 loops=1)
+                                      Filter: (artist_id = 33)
+                                      Rows Removed by Filter: 69777
+                                      Buffers: shared hit=378
+                                ->  Index Only Scan using pk_artist_follows on artist_follows f2  (cost=0.29..3.37 rows=3 width=8) (actual time=0.001..0.001 rows=2.49 loops=124)
+                                      Index Cond: (user_id = f1.user_id)
+                                      Filter: (artist_id <> f1.artist_id)
+                                      Rows Removed by Filter: 1
+                                      Heap Fetches: 0
+                                      Index Searches: 124
+                                      Buffers: shared hit=249
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.28..0.30 rows=1 width=22) (actual time=0.000..0.000 rows=1.00 loops=309)
+                                Index Cond: (artist_id = f2.artist_id)
+                                Index Searches: 309
+                                Buffers: shared hit=927
+Planning:
+  Buffers: shared hit=164
+Planning Time: 0.344 ms
+Execution Time: 1.791 ms

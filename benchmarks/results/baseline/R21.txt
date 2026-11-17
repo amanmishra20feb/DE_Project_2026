@@ -1,0 +1,45 @@
+=== R21 run 1 ===
+Nested Loop  (cost=0.70..16.74 rows=1 width=44) (actual time=0.358..0.358 rows=1.00 loops=1)
+  Buffers: shared hit=4 read=3
+  ->  Index Scan using uq_tracks_isrc on tracks t  (cost=0.42..8.44 rows=1 width=23) (actual time=0.353..0.353 rows=1.00 loops=1)
+        Index Cond: (isrc = 'INASA1301389'::bpchar)
+        Index Searches: 1
+        Buffers: shared hit=1 read=3
+  ->  Index Scan using albums_pkey on albums a  (cost=0.29..8.30 rows=1 width=29) (actual time=0.003..0.003 rows=1.00 loops=1)
+        Index Cond: (album_id = t.album_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=275 read=6
+Planning Time: 1.367 ms
+Execution Time: 0.380 ms
+=== R21 run 2 ===
+Nested Loop  (cost=0.70..16.74 rows=1 width=44) (actual time=0.011..0.012 rows=1.00 loops=1)
+  Buffers: shared hit=7
+  ->  Index Scan using uq_tracks_isrc on tracks t  (cost=0.42..8.44 rows=1 width=23) (actual time=0.008..0.008 rows=1.00 loops=1)
+        Index Cond: (isrc = 'INASA1301389'::bpchar)
+        Index Searches: 1
+        Buffers: shared hit=4
+  ->  Index Scan using albums_pkey on albums a  (cost=0.29..8.30 rows=1 width=29) (actual time=0.003..0.003 rows=1.00 loops=1)
+        Index Cond: (album_id = t.album_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=281
+Planning Time: 0.426 ms
+Execution Time: 0.033 ms
+=== R21 run 3 ===
+Nested Loop  (cost=0.70..16.74 rows=1 width=44) (actual time=0.013..0.013 rows=1.00 loops=1)
+  Buffers: shared hit=7
+  ->  Index Scan using uq_tracks_isrc on tracks t  (cost=0.42..8.44 rows=1 width=23) (actual time=0.009..0.009 rows=1.00 loops=1)
+        Index Cond: (isrc = 'INASA1301389'::bpchar)
+        Index Searches: 1
+        Buffers: shared hit=4
+  ->  Index Scan using albums_pkey on albums a  (cost=0.29..8.30 rows=1 width=29) (actual time=0.003..0.003 rows=1.00 loops=1)
+        Index Cond: (album_id = t.album_id)
+        Index Searches: 1
+        Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=281
+Planning Time: 0.433 ms
+Execution Time: 0.034 ms

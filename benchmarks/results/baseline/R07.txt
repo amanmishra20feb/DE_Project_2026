@@ -1,0 +1,114 @@
+=== R07 run 1 ===
+Limit  (cost=8879.57..8879.62 rows=20 width=12) (actual time=12.627..12.859 rows=20.00 loops=1)
+  Buffers: shared hit=2593 read=201
+  ->  Sort  (cost=8879.57..8886.94 rows=2948 width=12) (actual time=12.626..12.858 rows=20.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        Buffers: shared hit=2593 read=201
+        ->  Finalize HashAggregate  (cost=8771.64..8801.12 rows=2948 width=12) (actual time=12.447..12.773 rows=2609.00 loops=1)
+              Group Key: ta.artist_id
+              Batches: 1  Memory Usage: 217kB
+              Buffers: shared hit=2590 read=201
+              ->  Gather  (cost=8215.90..8746.58 rows=5012 width=12) (actual time=11.991..12.411 rows=4325.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=2590 read=201
+                    ->  Partial HashAggregate  (cost=7215.90..7245.38 rows=2948 width=12) (actual time=11.018..11.095 rows=2162.50 loops=2)
+                          Group Key: ta.artist_id
+                          Batches: 1  Memory Usage: 217kB
+                          Buffers: shared hit=2590 read=201
+                          Worker 0:  Batches: 1  Memory Usage: 217kB
+                          ->  Parallel Hash Join  (cost=1970.20..7176.74 rows=7833 width=4) (actual time=9.579..10.631 rows=6106.00 loops=2)
+                                Hash Cond: (s.track_id = ta.track_id)
+                                Buffers: shared hit=2590 read=201
+                                ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=6499 width=4) (actual time=4.787..5.118 rows=5359.50 loops=2)
+                                      Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                      Rows Removed by Filter: 119640
+                                      Buffers: shared hit=2576
+                                ->  Parallel Hash  (cost=1566.61..1566.61 rows=32287 width=8) (actual time=4.740..4.740 rows=38744.50 loops=2)
+                                      Buckets: 131072  Batches: 1  Memory Usage: 4096kB
+                                      Buffers: shared hit=14 read=201
+                                      ->  Parallel Index Only Scan using pk_track_artists on track_artists ta  (cost=0.29..1566.61 rows=32287 width=8) (actual time=0.027..2.957 rows=38744.50 loops=2)
+                                            Heap Fetches: 0
+                                            Index Searches: 1
+                                            Buffers: shared hit=14 read=201
+Planning:
+  Buffers: shared hit=152
+Planning Time: 0.263 ms
+Execution Time: 12.900 ms
+=== R07 run 2 ===
+Limit  (cost=8879.57..8879.62 rows=20 width=12) (actual time=10.473..10.652 rows=20.00 loops=1)
+  Buffers: shared hit=2794
+  ->  Sort  (cost=8879.57..8886.94 rows=2948 width=12) (actual time=10.472..10.651 rows=20.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        Buffers: shared hit=2794
+        ->  Finalize HashAggregate  (cost=8771.64..8801.12 rows=2948 width=12) (actual time=10.286..10.558 rows=2609.00 loops=1)
+              Group Key: ta.artist_id
+              Batches: 1  Memory Usage: 217kB
+              Buffers: shared hit=2791
+              ->  Gather  (cost=8215.90..8746.58 rows=5012 width=12) (actual time=9.838..10.210 rows=4266.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=2791
+                    ->  Partial HashAggregate  (cost=7215.90..7245.38 rows=2948 width=12) (actual time=8.886..8.962 rows=2133.00 loops=2)
+                          Group Key: ta.artist_id
+                          Batches: 1  Memory Usage: 217kB
+                          Buffers: shared hit=2791
+                          Worker 0:  Batches: 1  Memory Usage: 217kB
+                          ->  Parallel Hash Join  (cost=1970.20..7176.74 rows=7833 width=4) (actual time=7.518..8.515 rows=6106.00 loops=2)
+                                Hash Cond: (s.track_id = ta.track_id)
+                                Buffers: shared hit=2791
+                                ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=6499 width=4) (actual time=4.550..4.871 rows=5359.50 loops=2)
+                                      Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                      Rows Removed by Filter: 119640
+                                      Buffers: shared hit=2576
+                                ->  Parallel Hash  (cost=1566.61..1566.61 rows=32287 width=8) (actual time=2.918..2.918 rows=38744.50 loops=2)
+                                      Buckets: 131072  Batches: 1  Memory Usage: 4096kB
+                                      Buffers: shared hit=215
+                                      ->  Parallel Index Only Scan using pk_track_artists on track_artists ta  (cost=0.29..1566.61 rows=32287 width=8) (actual time=0.014..1.349 rows=38744.50 loops=2)
+                                            Heap Fetches: 0
+                                            Index Searches: 1
+                                            Buffers: shared hit=215
+Planning:
+  Buffers: shared hit=152
+Planning Time: 0.306 ms
+Execution Time: 10.695 ms
+=== R07 run 3 ===
+Limit  (cost=8879.57..8879.62 rows=20 width=12) (actual time=10.648..10.768 rows=20.00 loops=1)
+  Buffers: shared hit=2794
+  ->  Sort  (cost=8879.57..8886.94 rows=2948 width=12) (actual time=10.647..10.766 rows=20.00 loops=1)
+        Sort Key: (count(*)) DESC
+        Sort Method: top-N heapsort  Memory: 26kB
+        Buffers: shared hit=2794
+        ->  Finalize HashAggregate  (cost=8771.64..8801.12 rows=2948 width=12) (actual time=10.445..10.667 rows=2609.00 loops=1)
+              Group Key: ta.artist_id
+              Batches: 1  Memory Usage: 217kB
+              Buffers: shared hit=2791
+              ->  Gather  (cost=8215.90..8746.58 rows=5012 width=12) (actual time=9.946..10.259 rows=4296.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=2791
+                    ->  Partial HashAggregate  (cost=7215.90..7245.38 rows=2948 width=12) (actual time=8.973..9.067 rows=2148.00 loops=2)
+                          Group Key: ta.artist_id
+                          Batches: 1  Memory Usage: 217kB
+                          Buffers: shared hit=2791
+                          Worker 0:  Batches: 1  Memory Usage: 217kB
+                          ->  Parallel Hash Join  (cost=1970.20..7176.74 rows=7833 width=4) (actual time=7.530..8.578 rows=6106.00 loops=2)
+                                Hash Cond: (s.track_id = ta.track_id)
+                                Buffers: shared hit=2791
+                                ->  Parallel Seq Scan on streams s  (cost=0.00..5149.53 rows=6499 width=4) (actual time=4.497..4.839 rows=5359.50 loops=2)
+                                      Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                      Rows Removed by Filter: 119640
+                                      Buffers: shared hit=2576
+                                ->  Parallel Hash  (cost=1566.61..1566.61 rows=32287 width=8) (actual time=2.975..2.975 rows=38744.50 loops=2)
+                                      Buckets: 131072  Batches: 1  Memory Usage: 4064kB
+                                      Buffers: shared hit=215
+                                      ->  Parallel Index Only Scan using pk_track_artists on track_artists ta  (cost=0.29..1566.61 rows=32287 width=8) (actual time=0.012..1.368 rows=38744.50 loops=2)
+                                            Heap Fetches: 0
+                                            Index Searches: 1
+                                            Buffers: shared hit=215
+Planning:
+  Buffers: shared hit=152
+Planning Time: 0.275 ms
+Execution Time: 10.809 ms

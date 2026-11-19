@@ -1,0 +1,78 @@
+=== W05 run 1 ===
+Delete on playlist_tracks  (cost=13.04..112.42 rows=0 width=0) (actual time=0.048..0.049 rows=0.00 loops=1)
+  Buffers: shared hit=16 dirtied=3
+  InitPlan 1
+    ->  Index Scan using tracks_pkey on tracks tracks_1  (cost=0.29..8.31 rows=1 width=4) (actual time=0.005..0.005 rows=1.00 loops=1)
+          Index Cond: (track_id = 1389)
+          Index Searches: 1
+          Buffers: shared hit=3
+  ->  Nested Loop  (cost=4.73..104.11 rows=12 width=12) (actual time=0.021..0.026 rows=2.00 loops=1)
+        Buffers: shared hit=12
+        ->  Index Scan using uq_tracks_position on tracks  (cost=0.29..18.92 rows=7 width=10) (actual time=0.012..0.012 rows=1.00 loops=1)
+              Index Cond: (album_id = (InitPlan 1).col1)
+              Index Searches: 1
+              Buffers: shared hit=6
+        ->  Bitmap Heap Scan on playlist_tracks  (cost=4.43..12.15 rows=2 width=10) (actual time=0.009..0.014 rows=2.00 loops=1)
+              Recheck Cond: (track_id = tracks.track_id)
+              Heap Blocks: exact=3
+              Buffers: shared hit=6
+              ->  Bitmap Index Scan on ix_playlist_tracks_track  (cost=0.00..4.43 rows=2 width=0) (actual time=0.004..0.004 rows=5.00 loops=1)
+                    Index Cond: (track_id = tracks.track_id)
+                    Index Searches: 1
+                    Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=293
+Planning Time: 0.476 ms
+Execution Time: 0.103 ms
+=== W05 run 2 ===
+Delete on playlist_tracks  (cost=13.04..112.42 rows=0 width=0) (actual time=0.039..0.039 rows=0.00 loops=1)
+  Buffers: shared hit=14
+  InitPlan 1
+    ->  Index Scan using tracks_pkey on tracks tracks_1  (cost=0.29..8.31 rows=1 width=4) (actual time=0.005..0.005 rows=1.00 loops=1)
+          Index Cond: (track_id = 1389)
+          Index Searches: 1
+          Buffers: shared hit=3
+  ->  Nested Loop  (cost=4.73..104.11 rows=12 width=12) (actual time=0.025..0.030 rows=2.00 loops=1)
+        Buffers: shared hit=12
+        ->  Index Scan using uq_tracks_position on tracks  (cost=0.29..18.92 rows=7 width=10) (actual time=0.012..0.012 rows=1.00 loops=1)
+              Index Cond: (album_id = (InitPlan 1).col1)
+              Index Searches: 1
+              Buffers: shared hit=6
+        ->  Bitmap Heap Scan on playlist_tracks  (cost=4.43..12.15 rows=2 width=10) (actual time=0.012..0.017 rows=2.00 loops=1)
+              Recheck Cond: (track_id = tracks.track_id)
+              Heap Blocks: exact=3
+              Buffers: shared hit=6
+              ->  Bitmap Index Scan on ix_playlist_tracks_track  (cost=0.00..4.43 rows=2 width=0) (actual time=0.004..0.004 rows=5.00 loops=1)
+                    Index Cond: (track_id = tracks.track_id)
+                    Index Searches: 1
+                    Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=293
+Planning Time: 0.481 ms
+Execution Time: 0.092 ms
+=== W05 run 3 ===
+Delete on playlist_tracks  (cost=13.04..112.42 rows=0 width=0) (actual time=0.036..0.036 rows=0.00 loops=1)
+  Buffers: shared hit=14
+  InitPlan 1
+    ->  Index Scan using tracks_pkey on tracks tracks_1  (cost=0.29..8.31 rows=1 width=4) (actual time=0.005..0.005 rows=1.00 loops=1)
+          Index Cond: (track_id = 1389)
+          Index Searches: 1
+          Buffers: shared hit=3
+  ->  Nested Loop  (cost=4.73..104.11 rows=12 width=12) (actual time=0.023..0.028 rows=2.00 loops=1)
+        Buffers: shared hit=12
+        ->  Index Scan using uq_tracks_position on tracks  (cost=0.29..18.92 rows=7 width=10) (actual time=0.011..0.011 rows=1.00 loops=1)
+              Index Cond: (album_id = (InitPlan 1).col1)
+              Index Searches: 1
+              Buffers: shared hit=6
+        ->  Bitmap Heap Scan on playlist_tracks  (cost=4.43..12.15 rows=2 width=10) (actual time=0.012..0.016 rows=2.00 loops=1)
+              Recheck Cond: (track_id = tracks.track_id)
+              Heap Blocks: exact=3
+              Buffers: shared hit=6
+              ->  Bitmap Index Scan on ix_playlist_tracks_track  (cost=0.00..4.43 rows=2 width=0) (actual time=0.004..0.004 rows=5.00 loops=1)
+                    Index Cond: (track_id = tracks.track_id)
+                    Index Searches: 1
+                    Buffers: shared hit=3
+Planning:
+  Buffers: shared hit=293
+Planning Time: 0.477 ms
+Execution Time: 0.088 ms

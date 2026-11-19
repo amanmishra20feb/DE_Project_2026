@@ -1,0 +1,93 @@
+=== R19 run 1 ===
+Sort  (cost=6788.99..6789.83 rows=334 width=38) (actual time=21.384..21.391 rows=334.00 loops=1)
+  Sort Key: (count(s.track_id)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=57795
+  ->  HashAggregate  (cost=6771.65..6774.99 rows=334 width=38) (actual time=21.325..21.342 rows=334.00 loops=1)
+        Group Key: ar.artist_id
+        Batches: 1  Memory Usage: 72kB
+        Buffers: shared hit=57792
+        ->  Nested Loop Left Join  (cost=0.71..6519.95 rows=33560 width=34) (actual time=0.039..17.461 rows=70687.00 loops=1)
+              Buffers: shared hit=57792
+              ->  Nested Loop Left Join  (cost=0.29..1147.50 rows=8627 width=26) (actual time=0.026..1.827 rows=18918.00 loops=1)
+                    Buffers: shared hit=750
+                    ->  Seq Scan on artists ar  (cost=0.00..59.00 rows=334 width=22) (actual time=0.013..0.141 rows=334.00 loops=1)
+                          Filter: is_verified
+                          Rows Removed by Filter: 2666
+                          Buffers: shared hit=29
+                    ->  Index Only Scan using ix_track_artists_artist on track_artists ta  (cost=0.29..3.00 rows=26 width=8) (actual time=0.001..0.003 rows=56.64 loops=334)
+                          Index Cond: (artist_id = ar.artist_id)
+                          Heap Fetches: 0
+                          Index Searches: 334
+                          Buffers: shared hit=721
+              ->  Index Only Scan using ix_streams_track_time on streams s  (cost=0.42..0.57 rows=5 width=12) (actual time=0.001..0.001 rows=3.67 loops=18918)
+                    Index Cond: (track_id = ta.track_id)
+                    Heap Fetches: 23
+                    Index Searches: 18918
+                    Buffers: shared hit=57042
+Planning:
+  Buffers: shared hit=322
+Planning Time: 2.277 ms
+Execution Time: 21.481 ms
+=== R19 run 2 ===
+Sort  (cost=6788.99..6789.83 rows=334 width=38) (actual time=19.242..19.248 rows=334.00 loops=1)
+  Sort Key: (count(s.track_id)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=57795
+  ->  HashAggregate  (cost=6771.65..6774.99 rows=334 width=38) (actual time=19.196..19.211 rows=334.00 loops=1)
+        Group Key: ar.artist_id
+        Batches: 1  Memory Usage: 72kB
+        Buffers: shared hit=57792
+        ->  Nested Loop Left Join  (cost=0.71..6519.95 rows=33560 width=34) (actual time=0.015..15.771 rows=70687.00 loops=1)
+              Buffers: shared hit=57792
+              ->  Nested Loop Left Join  (cost=0.29..1147.50 rows=8627 width=26) (actual time=0.010..1.638 rows=18918.00 loops=1)
+                    Buffers: shared hit=750
+                    ->  Seq Scan on artists ar  (cost=0.00..59.00 rows=334 width=22) (actual time=0.004..0.125 rows=334.00 loops=1)
+                          Filter: is_verified
+                          Rows Removed by Filter: 2666
+                          Buffers: shared hit=29
+                    ->  Index Only Scan using ix_track_artists_artist on track_artists ta  (cost=0.29..3.00 rows=26 width=8) (actual time=0.001..0.003 rows=56.64 loops=334)
+                          Index Cond: (artist_id = ar.artist_id)
+                          Heap Fetches: 0
+                          Index Searches: 334
+                          Buffers: shared hit=721
+              ->  Index Only Scan using ix_streams_track_time on streams s  (cost=0.42..0.57 rows=5 width=12) (actual time=0.000..0.001 rows=3.67 loops=18918)
+                    Index Cond: (track_id = ta.track_id)
+                    Heap Fetches: 23
+                    Index Searches: 18918
+                    Buffers: shared hit=57042
+Planning:
+  Buffers: shared hit=322
+Planning Time: 0.566 ms
+Execution Time: 19.290 ms
+=== R19 run 3 ===
+Sort  (cost=6788.99..6789.83 rows=334 width=38) (actual time=19.672..19.679 rows=334.00 loops=1)
+  Sort Key: (count(s.track_id)) DESC
+  Sort Method: quicksort  Memory: 43kB
+  Buffers: shared hit=57795
+  ->  HashAggregate  (cost=6771.65..6774.99 rows=334 width=38) (actual time=19.626..19.641 rows=334.00 loops=1)
+        Group Key: ar.artist_id
+        Batches: 1  Memory Usage: 72kB
+        Buffers: shared hit=57792
+        ->  Nested Loop Left Join  (cost=0.71..6519.95 rows=33560 width=34) (actual time=0.014..16.165 rows=70687.00 loops=1)
+              Buffers: shared hit=57792
+              ->  Nested Loop Left Join  (cost=0.29..1147.50 rows=8627 width=26) (actual time=0.009..1.700 rows=18918.00 loops=1)
+                    Buffers: shared hit=750
+                    ->  Seq Scan on artists ar  (cost=0.00..59.00 rows=334 width=22) (actual time=0.004..0.127 rows=334.00 loops=1)
+                          Filter: is_verified
+                          Rows Removed by Filter: 2666
+                          Buffers: shared hit=29
+                    ->  Index Only Scan using ix_track_artists_artist on track_artists ta  (cost=0.29..3.00 rows=26 width=8) (actual time=0.001..0.003 rows=56.64 loops=334)
+                          Index Cond: (artist_id = ar.artist_id)
+                          Heap Fetches: 0
+                          Index Searches: 334
+                          Buffers: shared hit=721
+              ->  Index Only Scan using ix_streams_track_time on streams s  (cost=0.42..0.57 rows=5 width=12) (actual time=0.000..0.001 rows=3.67 loops=18918)
+                    Index Cond: (track_id = ta.track_id)
+                    Heap Fetches: 23
+                    Index Searches: 18918
+                    Buffers: shared hit=57042
+Planning:
+  Buffers: shared hit=322
+Planning Time: 0.571 ms
+Execution Time: 19.728 ms

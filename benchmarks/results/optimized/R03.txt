@@ -1,0 +1,36 @@
+=== R03 run 1 ===
+Limit  (cost=0.29..8.26 rows=20 width=21) (actual time=0.009..0.071 rows=20.00 loops=1)
+  Buffers: shared hit=6
+  ->  Index Scan using ix_tracks_popularity on tracks  (cost=0.29..3710.27 rows=9317 width=21) (actual time=0.009..0.070 rows=20.00 loops=1)
+        Filter: ((title)::text ~~* '%love%'::text)
+        Rows Removed by Filter: 146
+        Index Searches: 1
+        Buffers: shared hit=6
+Planning:
+  Buffers: shared hit=142
+Planning Time: 0.283 ms
+Execution Time: 0.080 ms
+=== R03 run 2 ===
+Limit  (cost=0.29..8.26 rows=20 width=21) (actual time=0.012..0.095 rows=20.00 loops=1)
+  Buffers: shared hit=6
+  ->  Index Scan using ix_tracks_popularity on tracks  (cost=0.29..3710.27 rows=9317 width=21) (actual time=0.012..0.093 rows=20.00 loops=1)
+        Filter: ((title)::text ~~* '%love%'::text)
+        Rows Removed by Filter: 146
+        Index Searches: 1
+        Buffers: shared hit=6
+Planning:
+  Buffers: shared hit=142
+Planning Time: 0.280 ms
+Execution Time: 0.105 ms
+=== R03 run 3 ===
+Limit  (cost=0.29..8.26 rows=20 width=21) (actual time=0.009..0.071 rows=20.00 loops=1)
+  Buffers: shared hit=6
+  ->  Index Scan using ix_tracks_popularity on tracks  (cost=0.29..3710.27 rows=9317 width=21) (actual time=0.009..0.070 rows=20.00 loops=1)
+        Filter: ((title)::text ~~* '%love%'::text)
+        Rows Removed by Filter: 146
+        Index Searches: 1
+        Buffers: shared hit=6
+Planning:
+  Buffers: shared hit=142
+Planning Time: 0.269 ms
+Execution Time: 0.080 ms

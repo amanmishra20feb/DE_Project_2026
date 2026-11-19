@@ -1,0 +1,18 @@
+        index_name        |   table_name    | index_size | table_size | pct_of_table 
+--------------------------+-----------------+------------+------------+--------------
+ ix_streams_started_cov   | streams         | 13 MB      | 20 MB      |           65
+ ix_streams_track_time    | streams         | 9920 kB    | 20 MB      |           48
+ ix_streams_user_time     | streams         | 7720 kB    | 20 MB      |           37
+ ix_playlist_tracks_track | playlist_tracks | 2656 kB    | 6120 kB    |           43
+ ix_track_artists_artist  | track_artists   | 1712 kB    | 3432 kB    |           50
+ ix_artist_follows_artist | artist_follows  | 1544 kB    | 3024 kB    |           51
+ ix_tracks_popularity     | tracks          | 1504 kB    | 5320 kB    |           28
+ ix_streams_playlist      | streams         | 928 kB     | 20 MB      |            5
+ ix_albums_artist_date    | albums          | 280 kB     | 1064 kB    |           26
+(9 rows)
+
+ all_new_indexes | all_tables 
+-----------------+------------
+ 39 MB           | 45 MB
+(1 row)
+

@@ -1,0 +1,53 @@
+SET
+   TimeZone   
+--------------
+ Asia/Kolkata
+(1 row)
+
+R03
+ query | rows_before | rows_after | only_before | only_after | same 
+-------+-------------+------------+-------------+------------+------
+ R03   |          20 |         20 |           0 |          0 | t
+(1 row)
+
+R09
+ query | rows_before | rows_after | only_before | only_after | same 
+-------+-------------+------------+-------------+------------+------
+ R09   |           4 |          4 |           0 |          0 | t
+(1 row)
+
+R10
+ query | rows_before | rows_after | only_before | only_after | same 
+-------+-------------+------------+-------------+------------+------
+ R10   |         180 |        180 |           0 |          0 | t
+(1 row)
+
+R13
+ query | rows_before | rows_after | only_before | only_after | equals_anti_join 
+-------+-------------+------------+-------------+------------+------------------
+ R13   |           0 |       1891 |           0 |       1891 | t
+(1 row)
+
+R19
+ query | rows_before | rows_after | only_before | only_after | same 
+-------+-------------+------------+-------------+------------+------
+ R19   |         334 |        334 |           0 |          0 | t
+(1 row)
+
+W04
+        query        | rows_before | rows_after | only_before | only_after | same 
+---------------------+-------------+------------+-------------+------------+------
+ W04 computed values |        3000 |       3000 |           0 |          0 | t
+(1 row)
+
+BEGIN
+UPDATE 3000
+ROLLBACK
+BEGIN
+UPDATE 3000
+ W04 table after update is the same 
+------------------------------------
+ t
+(1 row)
+
+ROLLBACK

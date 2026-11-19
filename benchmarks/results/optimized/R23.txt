@@ -1,0 +1,33 @@
+=== R23 run 1 ===
+Limit  (cost=8417.22..8418.27 rows=25 width=28) (actual time=32.590..32.593 rows=25.00 loops=1)
+  Buffers: shared hit=97 read=1250
+  ->  Index Only Scan Backward using ix_streams_started_cov on streams  (cost=0.42..10521.42 rows=250000 width=28) (actual time=0.037..29.250 rows=200025.00 loops=1)
+        Heap Fetches: 69
+        Index Searches: 1
+        Buffers: shared hit=97 read=1250
+Planning:
+  Buffers: shared hit=191
+Planning Time: 0.330 ms
+Execution Time: 32.605 ms
+=== R23 run 2 ===
+Limit  (cost=8417.22..8418.27 rows=25 width=28) (actual time=11.488..11.490 rows=25.00 loops=1)
+  Buffers: shared hit=1347
+  ->  Index Only Scan Backward using ix_streams_started_cov on streams  (cost=0.42..10521.42 rows=250000 width=28) (actual time=0.031..8.276 rows=200025.00 loops=1)
+        Heap Fetches: 69
+        Index Searches: 1
+        Buffers: shared hit=1347
+Planning:
+  Buffers: shared hit=191
+Planning Time: 0.271 ms
+Execution Time: 11.502 ms
+=== R23 run 3 ===
+Limit  (cost=8417.22..8418.27 rows=25 width=28) (actual time=11.635..11.637 rows=25.00 loops=1)
+  Buffers: shared hit=1347
+  ->  Index Only Scan Backward using ix_streams_started_cov on streams  (cost=0.42..10521.42 rows=250000 width=28) (actual time=0.041..8.417 rows=200025.00 loops=1)
+        Heap Fetches: 69
+        Index Searches: 1
+        Buffers: shared hit=1347
+Planning:
+  Buffers: shared hit=191
+Planning Time: 0.295 ms
+Execution Time: 11.649 ms

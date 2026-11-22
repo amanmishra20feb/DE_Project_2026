@@ -1,0 +1,24 @@
+  database  | total_size 
+------------+------------
+ spotify_db | 115 MB
+(1 row)
+
+   table_name    |  rows  | table_size | index_size | total_size 
+-----------------+--------+------------+------------+------------
+ streams         | 250000 | 20 MB      | 37 MB      | 57 MB
+ tracks          |  67808 | 5352 kB    | 8160 kB    | 13 MB
+ playlist_tracks | 120004 | 6152 kB    | 5288 kB    | 11 MB
+ track_artists   |  77489 | 3464 kB    | 3424 kB    | 6888 kB
+ artist_follows  |  69901 | 3056 kB    | 3096 kB    | 6152 kB
+ users           |  30000 | 2800 kB    | 2888 kB    | 5688 kB
+ liked_tracks    |  58533 | 2568 kB    | 1296 kB    | 3864 kB
+ albums          |  12000 | 1096 kB    | 944 kB     | 2040 kB
+ playlists       |  10000 | 680 kB     | 240 kB     | 920 kB
+ artists         |   3000 | 264 kB     | 160 kB     | 424 kB
+(10 rows)
+
+ all_tables | all_indexes | all_tables_bytes | all_indexes_bytes 
+------------+-------------+------------------+-------------------
+ 45 MB      | 62 MB       |         47177728 |          64561152
+(1 row)
+

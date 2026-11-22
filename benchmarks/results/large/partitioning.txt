@@ -1,0 +1,1350 @@
+SET
+Pager usage is off.
+psql:sql/08_partitioning.sql:12: NOTICE:  schema "spotify_part" does not exist, skipping
+DROP SCHEMA
+CREATE SCHEMA
+=== Primary key without the partition key (expected to fail) ===
+psql:sql/08_partitioning.sql:22: ERROR:  unique constraint on partitioned table must include all partitioning columns
+DETAIL:  PRIMARY KEY constraint on table "pk_test" lacks column "started_at" which is part of the partition key.
+CREATE TABLE
+DO
+CREATE TABLE
+INSERT 0 5000000
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+VACUUM
+=== Partitions: rows and size ===
+    partition    |                                     bounds                                     |  rows  | table_size | index_size 
+-----------------+--------------------------------------------------------------------------------+--------+------------+------------
+ streams_2025_01 | FOR VALUES FROM ('2025-01-01 00:00:00+05:30') TO ('2025-02-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2025_02 | FOR VALUES FROM ('2025-02-01 00:00:00+05:30') TO ('2025-03-01 00:00:00+05:30') | 256411 | 20 MB      | 41 MB
+ streams_2025_03 | FOR VALUES FROM ('2025-03-01 00:00:00+05:30') TO ('2025-04-01 00:00:00+05:30') | 283882 | 23 MB      | 45 MB
+ streams_2025_04 | FOR VALUES FROM ('2025-04-01 00:00:00+05:30') TO ('2025-05-01 00:00:00+05:30') | 274726 | 22 MB      | 44 MB
+ streams_2025_05 | FOR VALUES FROM ('2025-05-01 00:00:00+05:30') TO ('2025-06-01 00:00:00+05:30') | 283882 | 23 MB      | 45 MB
+ streams_2025_06 | FOR VALUES FROM ('2025-06-01 00:00:00+05:30') TO ('2025-07-01 00:00:00+05:30') | 274726 | 22 MB      | 44 MB
+ streams_2025_07 | FOR VALUES FROM ('2025-07-01 00:00:00+05:30') TO ('2025-08-01 00:00:00+05:30') | 283882 | 23 MB      | 45 MB
+ streams_2025_08 | FOR VALUES FROM ('2025-08-01 00:00:00+05:30') TO ('2025-09-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2025_09 | FOR VALUES FROM ('2025-09-01 00:00:00+05:30') TO ('2025-10-01 00:00:00+05:30') | 274725 | 22 MB      | 44 MB
+ streams_2025_10 | FOR VALUES FROM ('2025-10-01 00:00:00+05:30') TO ('2025-11-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2025_11 | FOR VALUES FROM ('2025-11-01 00:00:00+05:30') TO ('2025-12-01 00:00:00+05:30') | 274726 | 22 MB      | 44 MB
+ streams_2025_12 | FOR VALUES FROM ('2025-12-01 00:00:00+05:30') TO ('2026-01-01 00:00:00+05:30') | 283882 | 23 MB      | 45 MB
+ streams_2026_01 | FOR VALUES FROM ('2026-01-01 00:00:00+05:30') TO ('2026-02-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2026_02 | FOR VALUES FROM ('2026-02-01 00:00:00+05:30') TO ('2026-03-01 00:00:00+05:30') | 256410 | 20 MB      | 41 MB
+ streams_2026_03 | FOR VALUES FROM ('2026-03-01 00:00:00+05:30') TO ('2026-04-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2026_04 | FOR VALUES FROM ('2026-04-01 00:00:00+05:30') TO ('2026-05-01 00:00:00+05:30') | 274725 | 22 MB      | 44 MB
+ streams_2026_05 | FOR VALUES FROM ('2026-05-01 00:00:00+05:30') TO ('2026-06-01 00:00:00+05:30') | 283883 | 23 MB      | 45 MB
+ streams_2026_06 | FOR VALUES FROM ('2026-06-01 00:00:00+05:30') TO ('2026-07-01 00:00:00+05:30') | 274725 | 22 MB      | 44 MB
+ streams_default | DEFAULT                                                                        |      0 | 0 bytes    | 40 kB
+(19 rows)
+
+ partitioned_tables | plain_table 
+--------------------+-------------
+ 399 MB             | 399 MB
+(1 row)
+
+=== Pruning: R10 (June 2026 only) ===
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate
+   Group Key: ((streams.started_at)::date), streams.platform
+   ->  Sort
+         Sort Key: ((streams.started_at)::date), streams.platform
+         ->  Seq Scan on streams_2026_06 streams
+               Filter: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+(6 rows)
+
+=== No pruning: R04 (one user, no date in the WHERE clause) ===
+                                               QUERY PLAN                                                
+---------------------------------------------------------------------------------------------------------
+ Limit
+   ->  Sort
+         Sort Key: s.started_at DESC
+         ->  Nested Loop
+               ->  Append
+                     ->  Index Scan using streams_2025_01_user_id_started_at_idx on streams_2025_01 s_1
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_02_user_id_started_at_idx on streams_2025_02 s_2
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_03_user_id_started_at_idx on streams_2025_03 s_3
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_04_user_id_started_at_idx on streams_2025_04 s_4
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_05_user_id_started_at_idx on streams_2025_05 s_5
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_06_user_id_started_at_idx on streams_2025_06 s_6
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_07_user_id_started_at_idx on streams_2025_07 s_7
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_08_user_id_started_at_idx on streams_2025_08 s_8
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_09_user_id_started_at_idx on streams_2025_09 s_9
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_10_user_id_started_at_idx on streams_2025_10 s_10
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_11_user_id_started_at_idx on streams_2025_11 s_11
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2025_12_user_id_started_at_idx on streams_2025_12 s_12
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_01_user_id_started_at_idx on streams_2026_01 s_13
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_02_user_id_started_at_idx on streams_2026_02 s_14
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_03_user_id_started_at_idx on streams_2026_03 s_15
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_04_user_id_started_at_idx on streams_2026_04 s_16
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_05_user_id_started_at_idx on streams_2026_05 s_17
+                           Index Cond: (user_id = 1038)
+                     ->  Index Scan using streams_2026_06_user_id_started_at_idx on streams_2026_06 s_18
+                           Index Cond: (user_id = 1038)
+                     ->  Seq Scan on streams_default s_19
+                           Filter: (user_id = 1038)
+               ->  Index Scan using tracks_pkey on tracks t
+                     Index Cond: (track_id = s.track_id)
+(45 rows)
+
+SET
+=== R10 on streams ===
+                                                                                 QUERY PLAN                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=42589.48..48700.50 rows=271601 width=18) (actual time=115.770..149.507 rows=180.00 loops=1)
+   Group Key: ((started_at)::date), platform
+   Buffers: shared hit=7 read=1845 written=1298, temp read=690 written=693
+   ->  Sort  (cost=42589.48..43268.48 rows=271601 width=10) (actual time=115.358..131.444 rows=274725.00 loops=1)
+         Sort Key: ((started_at)::date), platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=7 read=1845 written=1298, temp read=690 written=693
+         ->  Index Only Scan using ix_streams_started_cov on streams  (cost=0.43..13431.46 rows=271601 width=10) (actual time=0.198..58.162 rows=274725.00 loops=1)
+               Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Heap Fetches: 67
+               Index Searches: 1
+               Buffers: shared hit=4 read=1845 written=1298
+ Planning:
+   Buffers: shared read=5
+ Planning Time: 0.581 ms
+ Execution Time: 150.894 ms
+(16 rows)
+
+                                                                                 QUERY PLAN                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=42589.48..48700.50 rows=271601 width=18) (actual time=99.342..133.078 rows=180.00 loops=1)
+   Group Key: ((started_at)::date), platform
+   Buffers: shared hit=1849, temp read=690 written=693
+   ->  Sort  (cost=42589.48..43268.48 rows=271601 width=10) (actual time=98.929..114.969 rows=274725.00 loops=1)
+         Sort Key: ((started_at)::date), platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=1849, temp read=690 written=693
+         ->  Index Only Scan using ix_streams_started_cov on streams  (cost=0.43..13431.46 rows=271601 width=10) (actual time=0.010..42.237 rows=274725.00 loops=1)
+               Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Heap Fetches: 67
+               Index Searches: 1
+               Buffers: shared hit=1849
+ Planning:
+   Buffers: shared hit=5
+ Planning Time: 0.131 ms
+ Execution Time: 134.568 ms
+(16 rows)
+
+                                                                                 QUERY PLAN                                                                                 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=42589.48..48700.50 rows=271601 width=18) (actual time=98.765..132.789 rows=180.00 loops=1)
+   Group Key: ((started_at)::date), platform
+   Buffers: shared hit=1849, temp read=690 written=693
+   ->  Sort  (cost=42589.48..43268.48 rows=271601 width=10) (actual time=98.349..114.778 rows=274725.00 loops=1)
+         Sort Key: ((started_at)::date), platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=1849, temp read=690 written=693
+         ->  Index Only Scan using ix_streams_started_cov on streams  (cost=0.43..13431.46 rows=271601 width=10) (actual time=0.022..41.850 rows=274725.00 loops=1)
+               Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Heap Fetches: 67
+               Index Searches: 1
+               Buffers: shared hit=1849
+ Planning:
+   Buffers: shared hit=5
+ Planning Time: 0.171 ms
+ Execution Time: 134.211 ms
+(16 rows)
+
+=== R07 on streams ===
+                                                                                                QUERY PLAN                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=45193.14..45193.19 rows=20 width=12) (actual time=160.407..160.697 rows=20.00 loops=1)
+   Buffers: shared hit=1851 read=8590 written=106
+   ->  Sort  (cost=45193.14..45296.50 rows=41344 width=12) (actual time=160.405..160.695 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=1851 read=8590 written=106
+         ->  Finalize HashAggregate  (cost=43679.55..44092.99 rows=41344 width=12) (actual time=152.734..157.505 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=1851 read=8590 written=106
+               ->  Gather  (cost=32847.38..43183.42 rows=99226 width=12) (actual time=131.702..139.486 rows=91151.00 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     Buffers: shared hit=1851 read=8590 written=106
+                     ->  Partial HashAggregate  (cost=31847.38..32260.82 rows=41344 width=12) (actual time=126.413..129.184 rows=30383.67 loops=3)
+                           Group Key: ta.artist_id
+                           Batches: 1  Memory Usage: 2329kB
+                           Buffers: shared hit=1851 read=8590 written=106
+                           Worker 0:  Batches: 1  Memory Usage: 2329kB
+                           Worker 1:  Batches: 1  Memory Usage: 2329kB
+                           ->  Parallel Hash Join  (cost=12554.02..31309.37 rows=107603 width=4) (actual time=16.322..111.046 rows=81604.33 loops=3)
+                                 Hash Cond: (ta.track_id = s.track_id)
+                                 Buffers: shared hit=1851 read=8590 written=106
+                                 ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.093..24.281 rows=518240.00 loops=3)
+                                       Buffers: shared read=8590 written=106
+                                 ->  Parallel Hash  (cost=11451.03..11451.03 rows=88239 width=4) (actual time=16.080..16.080 rows=71454.67 loops=3)
+                                       Buckets: 262144  Batches: 1  Memory Usage: 10496kB
+                                       Buffers: shared hit=1851
+                                       ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..11451.03 rows=88239 width=4) (actual time=0.045..9.545 rows=71454.67 loops=3)
+                                             Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                             Filter: (ms_played >= 30000)
+                                             Rows Removed by Filter: 20120
+                                             Heap Fetches: 67
+                                             Index Searches: 1
+                                             Buffers: shared hit=1851
+ Planning:
+   Buffers: shared hit=57 read=14
+ Planning Time: 2.684 ms
+ Execution Time: 160.820 ms
+(39 rows)
+
+                                                                                                QUERY PLAN                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=45193.14..45193.19 rows=20 width=12) (actual time=159.547..159.784 rows=20.00 loops=1)
+   Buffers: shared hit=2133 read=8308 written=282
+   ->  Sort  (cost=45193.14..45296.50 rows=41344 width=12) (actual time=159.546..159.782 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=2133 read=8308 written=282
+         ->  Finalize HashAggregate  (cost=43679.55..44092.99 rows=41344 width=12) (actual time=151.756..156.702 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=2133 read=8308 written=282
+               ->  Gather  (cost=32847.38..43183.42 rows=99226 width=12) (actual time=131.232..138.993 rows=91174.00 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     Buffers: shared hit=2133 read=8308 written=282
+                     ->  Partial HashAggregate  (cost=31847.38..32260.82 rows=41344 width=12) (actual time=127.885..130.611 rows=30391.33 loops=3)
+                           Group Key: ta.artist_id
+                           Batches: 1  Memory Usage: 2329kB
+                           Buffers: shared hit=2133 read=8308 written=282
+                           Worker 0:  Batches: 1  Memory Usage: 2329kB
+                           Worker 1:  Batches: 1  Memory Usage: 2329kB
+                           ->  Parallel Hash Join  (cost=12554.02..31309.37 rows=107603 width=4) (actual time=16.157..112.417 rows=81604.33 loops=3)
+                                 Hash Cond: (ta.track_id = s.track_id)
+                                 Buffers: shared hit=2133 read=8308 written=282
+                                 ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.198..24.886 rows=518240.00 loops=3)
+                                       Buffers: shared hit=282 read=8308 written=282
+                                 ->  Parallel Hash  (cost=11451.03..11451.03 rows=88239 width=4) (actual time=15.827..15.828 rows=71454.67 loops=3)
+                                       Buckets: 262144  Batches: 1  Memory Usage: 10464kB
+                                       Buffers: shared hit=1851
+                                       ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..11451.03 rows=88239 width=4) (actual time=0.033..9.526 rows=71454.67 loops=3)
+                                             Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                             Filter: (ms_played >= 30000)
+                                             Rows Removed by Filter: 20120
+                                             Heap Fetches: 67
+                                             Index Searches: 1
+                                             Buffers: shared hit=1851
+ Planning:
+   Buffers: shared hit=21
+ Planning Time: 0.257 ms
+ Execution Time: 159.840 ms
+(39 rows)
+
+                                                                                                QUERY PLAN                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=45193.14..45193.19 rows=20 width=12) (actual time=157.664..157.864 rows=20.00 loops=1)
+   Buffers: shared hit=2415 read=8026 written=182
+   ->  Sort  (cost=45193.14..45296.50 rows=41344 width=12) (actual time=157.663..157.861 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=2415 read=8026 written=182
+         ->  Finalize HashAggregate  (cost=43679.55..44092.99 rows=41344 width=12) (actual time=149.809..154.496 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=2415 read=8026 written=182
+               ->  Gather  (cost=32847.38..43183.42 rows=99226 width=12) (actual time=129.257..136.906 rows=90986.00 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     Buffers: shared hit=2415 read=8026 written=182
+                     ->  Partial HashAggregate  (cost=31847.38..32260.82 rows=41344 width=12) (actual time=126.215..128.947 rows=30328.67 loops=3)
+                           Group Key: ta.artist_id
+                           Batches: 1  Memory Usage: 2329kB
+                           Buffers: shared hit=2415 read=8026 written=182
+                           Worker 0:  Batches: 1  Memory Usage: 2329kB
+                           Worker 1:  Batches: 1  Memory Usage: 2329kB
+                           ->  Parallel Hash Join  (cost=12554.02..31309.37 rows=107603 width=4) (actual time=17.110..110.959 rows=81604.33 loops=3)
+                                 Hash Cond: (ta.track_id = s.track_id)
+                                 Buffers: shared hit=2415 read=8026 written=182
+                                 ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.095..24.239 rows=518240.00 loops=3)
+                                       Buffers: shared hit=564 read=8026 written=182
+                                 ->  Parallel Hash  (cost=11451.03..11451.03 rows=88239 width=4) (actual time=16.887..16.888 rows=71454.67 loops=3)
+                                       Buckets: 262144  Batches: 1  Memory Usage: 10496kB
+                                       Buffers: shared hit=1851
+                                       ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..11451.03 rows=88239 width=4) (actual time=0.034..9.911 rows=71454.67 loops=3)
+                                             Index Cond: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                                             Filter: (ms_played >= 30000)
+                                             Rows Removed by Filter: 20120
+                                             Heap Fetches: 67
+                                             Index Searches: 1
+                                             Buffers: shared hit=1851
+ Planning:
+   Buffers: shared hit=21
+ Planning Time: 0.197 ms
+ Execution Time: 157.912 ms
+(39 rows)
+
+=== R16 on streams ===
+                                                                                            QUERY PLAN                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=82992.79..83096.15 rows=41344 width=12) (actual time=215.956..218.292 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=2587 read=7745 written=183, temp read=649 written=652
+   ->  GroupAggregate  (cost=41875.35..79822.65 rows=41344 width=12) (actual time=154.064..212.125 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=2587 read=7745 written=183, temp read=649 written=652
+         ->  Gather Merge  (cost=41875.35..77864.18 rows=309006 width=8) (actual time=153.947..190.545 rows=293125.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=2587 read=7745 written=183, temp read=649 written=652
+               ->  Sort  (cost=40875.32..41197.20 rows=128752 width=8) (actual time=150.359..156.370 rows=97708.33 loops=3)
+                     Sort Key: ta.artist_id, s.user_id
+                     Sort Method: external merge  Disk: 1776kB
+                     Buffers: shared hit=2587 read=7745 written=183, temp read=649 written=652
+                     Worker 0:  Sort Method: external merge  Disk: 1704kB
+                     Worker 1:  Sort Method: external merge  Disk: 1712kB
+                     ->  Parallel Hash Join  (cost=11104.52..29947.99 rows=128752 width=8) (actual time=17.333..125.046 rows=97708.33 loops=3)
+                           Hash Cond: (ta.track_id = s.track_id)
+                           Buffers: shared hit=2573 read=7745 written=183
+                           ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.107..24.644 rows=518240.00 loops=3)
+                                 Buffers: shared hit=846 read=7744 written=183
+                           ->  Parallel Hash  (cost=9784.74..9784.74 rows=105582 width=8) (actual time=17.097..17.097 rows=85470.00 loops=3)
+                                 Buckets: 262144  Batches: 1  Memory Usage: 12160kB
+                                 Buffers: shared hit=1727 read=1
+                                 ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..9784.74 rows=105582 width=8) (actual time=0.040..8.774 rows=85470.00 loops=3)
+                                       Index Cond: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                       Heap Fetches: 67
+                                       Index Searches: 1
+                                       Buffers: shared hit=1727 read=1
+ Planning:
+   Buffers: shared hit=19
+ Planning Time: 0.192 ms
+ Execution Time: 220.963 ms
+(34 rows)
+
+                                                                                            QUERY PLAN                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=82992.79..83096.15 rows=41344 width=12) (actual time=212.830..215.157 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=2870 read=7462 written=182, temp read=649 written=652
+   ->  GroupAggregate  (cost=41875.35..79822.65 rows=41344 width=12) (actual time=150.751..208.723 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=2870 read=7462 written=182, temp read=649 written=652
+         ->  Gather Merge  (cost=41875.35..77864.18 rows=309006 width=8) (actual time=150.626..187.138 rows=293125.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=2870 read=7462 written=182, temp read=649 written=652
+               ->  Sort  (cost=40875.32..41197.20 rows=128752 width=8) (actual time=146.963..152.688 rows=97708.33 loops=3)
+                     Sort Key: ta.artist_id, s.user_id
+                     Sort Method: external merge  Disk: 1760kB
+                     Buffers: shared hit=2870 read=7462 written=182, temp read=649 written=652
+                     Worker 0:  Sort Method: external merge  Disk: 1696kB
+                     Worker 1:  Sort Method: external merge  Disk: 1736kB
+                     ->  Parallel Hash Join  (cost=11104.52..29947.99 rows=128752 width=8) (actual time=16.346..122.126 rows=97708.33 loops=3)
+                           Hash Cond: (ta.track_id = s.track_id)
+                           Buffers: shared hit=2856 read=7462 written=182
+                           ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.092..24.564 rows=518240.00 loops=3)
+                                 Buffers: shared hit=1128 read=7462 written=182
+                           ->  Parallel Hash  (cost=9784.74..9784.74 rows=105582 width=8) (actual time=16.119..16.120 rows=85470.00 loops=3)
+                                 Buckets: 262144  Batches: 1  Memory Usage: 12128kB
+                                 Buffers: shared hit=1728
+                                 ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..9784.74 rows=105582 width=8) (actual time=0.036..8.228 rows=85470.00 loops=3)
+                                       Index Cond: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                       Heap Fetches: 67
+                                       Index Searches: 1
+                                       Buffers: shared hit=1728
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.208 ms
+ Execution Time: 217.447 ms
+(34 rows)
+
+                                                                                            QUERY PLAN                                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=82992.79..83096.15 rows=41344 width=12) (actual time=213.102..215.433 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=3152 read=7180 written=182, temp read=648 written=651
+   ->  GroupAggregate  (cost=41875.35..79822.65 rows=41344 width=12) (actual time=151.143..209.259 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=3152 read=7180 written=182, temp read=648 written=651
+         ->  Gather Merge  (cost=41875.35..77864.18 rows=309006 width=8) (actual time=151.029..187.579 rows=293125.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=3152 read=7180 written=182, temp read=648 written=651
+               ->  Sort  (cost=40875.32..41197.20 rows=128752 width=8) (actual time=147.898..153.732 rows=97708.33 loops=3)
+                     Sort Key: ta.artist_id, s.user_id
+                     Sort Method: external merge  Disk: 1744kB
+                     Buffers: shared hit=3152 read=7180 written=182, temp read=648 written=651
+                     Worker 0:  Sort Method: external merge  Disk: 1712kB
+                     Worker 1:  Sort Method: external merge  Disk: 1728kB
+                     ->  Parallel Hash Join  (cost=11104.52..29947.99 rows=128752 width=8) (actual time=17.335..122.685 rows=97708.33 loops=3)
+                           Hash Cond: (ta.track_id = s.track_id)
+                           Buffers: shared hit=3138 read=7180 written=182
+                           ->  Parallel Seq Scan on track_artists ta  (cost=0.00..15068.00 rows=647800 width=8) (actual time=0.104..24.523 rows=518240.00 loops=3)
+                                 Buffers: shared hit=1410 read=7180 written=182
+                           ->  Parallel Hash  (cost=9784.74..9784.74 rows=105582 width=8) (actual time=17.103..17.104 rows=85470.00 loops=3)
+                                 Buckets: 262144  Batches: 1  Memory Usage: 12128kB
+                                 Buffers: shared hit=1728
+                                 ->  Parallel Index Only Scan using ix_streams_started_cov on streams s  (cost=0.43..9784.74 rows=105582 width=8) (actual time=0.034..8.622 rows=85470.00 loops=3)
+                                       Index Cond: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                       Heap Fetches: 67
+                                       Index Searches: 1
+                                       Buffers: shared hit=1728
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.216 ms
+ Execution Time: 217.744 ms
+(34 rows)
+
+=== R04 on streams ===
+                                                                   QUERY PLAN                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.555..0.928 rows=6.00 loops=1)
+   Buffers: shared hit=10 read=25 dirtied=1
+   ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.554..0.927 rows=6.00 loops=1)
+         Buffers: shared hit=10 read=25 dirtied=1
+         ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.396..0.427 rows=6.00 loops=1)
+               Index Cond: (user_id = 1038)
+               Index Searches: 1
+               Buffers: shared hit=2 read=9 dirtied=1
+         ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.082..0.082 rows=1.00 loops=6)
+               Index Cond: (track_id = s.track_id)
+               Index Searches: 6
+               Buffers: shared hit=8 read=16
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.174 ms
+ Execution Time: 0.940 ms
+(16 rows)
+
+                                                                   QUERY PLAN                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.008..0.019 rows=6.00 loops=1)
+   Buffers: shared hit=33
+   ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.007..0.018 rows=6.00 loops=1)
+         Buffers: shared hit=33
+         ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.003..0.005 rows=6.00 loops=1)
+               Index Cond: (user_id = 1038)
+               Index Searches: 1
+               Buffers: shared hit=9
+         ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.002..0.002 rows=1.00 loops=6)
+               Index Cond: (track_id = s.track_id)
+               Index Searches: 6
+               Buffers: shared hit=24
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.142 ms
+ Execution Time: 0.029 ms
+(16 rows)
+
+                                                                   QUERY PLAN                                                                    
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.005..0.015 rows=6.00 loops=1)
+   Buffers: shared hit=33
+   ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.005..0.014 rows=6.00 loops=1)
+         Buffers: shared hit=33
+         ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.002..0.004 rows=6.00 loops=1)
+               Index Cond: (user_id = 1038)
+               Index Searches: 1
+               Buffers: shared hit=9
+         ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.001..0.001 rows=1.00 loops=6)
+               Index Cond: (track_id = s.track_id)
+               Index Searches: 6
+               Buffers: shared hit=24
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.099 ms
+ Execution Time: 0.021 ms
+(16 rows)
+
+=== R18 on streams ===
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=88511.59..88511.61 rows=6 width=46) (actual time=391.996..393.203 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=23 read=51045 written=222
+   ->  Finalize GroupAggregate  (cost=88509.64..88511.52 rows=6 width=46) (actual time=391.976..393.190 rows=6.00 loops=1)
+         Group Key: platform
+         Buffers: shared hit=23 read=51045 written=222
+         ->  Gather Merge  (cost=88509.64..88511.28 rows=14 width=22) (actual time=391.966..393.177 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=23 read=51045 written=222
+               ->  Sort  (cost=87509.62..87509.64 rows=6 width=22) (actual time=388.432..388.433 rows=6.00 loops=3)
+                     Sort Key: platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=23 read=51045 written=222
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=87509.48..87509.54 rows=6 width=22) (actual time=388.398..388.399 rows=6.00 loops=3)
+                           Group Key: platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared hit=7 read=51045 written=222
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Seq Scan on streams  (cost=0.00..71884.85 rows=2083285 width=7) (actual time=0.121..88.496 rows=1666666.67 loops=3)
+                                 Buffers: shared hit=7 read=51045 written=222
+ Planning Time: 0.054 ms
+ Execution Time: 393.230 ms
+(27 rows)
+
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=88511.59..88511.61 rows=6 width=46) (actual time=403.954..405.306 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=305 read=50763 written=82
+   ->  Finalize GroupAggregate  (cost=88509.64..88511.52 rows=6 width=46) (actual time=403.934..405.302 rows=6.00 loops=1)
+         Group Key: platform
+         Buffers: shared hit=305 read=50763 written=82
+         ->  Gather Merge  (cost=88509.64..88511.28 rows=14 width=22) (actual time=403.924..405.281 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=305 read=50763 written=82
+               ->  Sort  (cost=87509.62..87509.64 rows=6 width=22) (actual time=400.089..400.092 rows=6.00 loops=3)
+                     Sort Key: platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=305 read=50763 written=82
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=87509.48..87509.54 rows=6 width=22) (actual time=400.063..400.065 rows=6.00 loops=3)
+                           Group Key: platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared hit=289 read=50763 written=82
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Seq Scan on streams  (cost=0.00..71884.85 rows=2083285 width=7) (actual time=0.062..90.743 rows=1666666.67 loops=3)
+                                 Buffers: shared hit=289 read=50763 written=82
+ Planning Time: 0.114 ms
+ Execution Time: 405.336 ms
+(27 rows)
+
+                                                                         QUERY PLAN                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=88511.59..88511.61 rows=6 width=46) (actual time=400.854..402.022 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=587 read=50481 written=82
+   ->  Finalize GroupAggregate  (cost=88509.64..88511.52 rows=6 width=46) (actual time=400.830..402.013 rows=6.00 loops=1)
+         Group Key: platform
+         Buffers: shared hit=587 read=50481 written=82
+         ->  Gather Merge  (cost=88509.64..88511.28 rows=14 width=22) (actual time=400.820..402.001 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=587 read=50481 written=82
+               ->  Sort  (cost=87509.62..87509.64 rows=6 width=22) (actual time=397.155..397.156 rows=6.00 loops=3)
+                     Sort Key: platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=587 read=50481 written=82
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=87509.48..87509.54 rows=6 width=22) (actual time=397.128..397.129 rows=6.00 loops=3)
+                           Group Key: platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared hit=571 read=50481 written=82
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Seq Scan on streams  (cost=0.00..71884.85 rows=2083285 width=7) (actual time=0.064..90.468 rows=1666666.67 loops=3)
+                                 Buffers: shared hit=571 read=50481 written=82
+ Planning Time: 0.085 ms
+ Execution Time: 402.048 ms
+(27 rows)
+
+SET
+=== R10 on streams_part ===
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=37128.83..43310.15 rows=274725 width=18) (actual time=101.954..135.142 rows=180.00 loops=1)
+   Group Key: ((streams.started_at)::date), streams.platform
+   Buffers: shared hit=2806, temp read=690 written=693
+   ->  Sort  (cost=37128.83..37815.65 rows=274725 width=10) (actual time=101.534..117.530 rows=274725.00 loops=1)
+         Sort Key: ((streams.started_at)::date), streams.platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=2806, temp read=690 written=693
+         ->  Seq Scan on streams_2026_06 streams  (cost=0.00..7613.69 rows=274725 width=10) (actual time=0.008..44.897 rows=274725.00 loops=1)
+               Filter: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Buffers: shared hit=2806
+ Planning:
+   Buffers: shared hit=8
+ Planning Time: 0.226 ms
+ Execution Time: 136.668 ms
+(14 rows)
+
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=37128.83..43310.15 rows=274725 width=18) (actual time=100.831..134.053 rows=180.00 loops=1)
+   Group Key: ((streams.started_at)::date), streams.platform
+   Buffers: shared hit=2806, temp read=690 written=693
+   ->  Sort  (cost=37128.83..37815.65 rows=274725 width=10) (actual time=100.415..116.377 rows=274725.00 loops=1)
+         Sort Key: ((streams.started_at)::date), streams.platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=2806, temp read=690 written=693
+         ->  Seq Scan on streams_2026_06 streams  (cost=0.00..7613.69 rows=274725 width=10) (actual time=0.005..44.783 rows=274725.00 loops=1)
+               Filter: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Buffers: shared hit=2806
+ Planning:
+   Buffers: shared hit=8
+ Planning Time: 0.171 ms
+ Execution Time: 135.695 ms
+(14 rows)
+
+                                                                               QUERY PLAN                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=37128.83..43310.15 rows=274725 width=18) (actual time=100.738..134.594 rows=180.00 loops=1)
+   Group Key: ((streams.started_at)::date), streams.platform
+   Buffers: shared hit=2806, temp read=690 written=693
+   ->  Sort  (cost=37128.83..37815.65 rows=274725 width=10) (actual time=100.322..116.595 rows=274725.00 loops=1)
+         Sort Key: ((streams.started_at)::date), streams.platform
+         Sort Method: external merge  Disk: 5520kB
+         Buffers: shared hit=2806, temp read=690 written=693
+         ->  Seq Scan on streams_2026_06 streams  (cost=0.00..7613.69 rows=274725 width=10) (actual time=0.006..44.037 rows=274725.00 loops=1)
+               Filter: ((started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+               Buffers: shared hit=2806
+ Planning:
+   Buffers: shared hit=8
+ Planning Time: 0.181 ms
+ Execution Time: 136.382 ms
+(14 rows)
+
+=== R07 on streams_part ===
+                                                                                                 QUERY PLAN                                                                                                  
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=40517.11..40517.16 rows=20 width=12) (actual time=1096.056..1096.068 rows=20.00 loops=1)
+   Buffers: shared hit=590466 read=4259 written=3589
+   ->  Sort  (cost=40517.11..40620.47 rows=41344 width=12) (actual time=1096.055..1096.065 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=590466 read=4259 written=3589
+         ->  HashAggregate  (cost=39003.52..39416.96 rows=41344 width=12) (actual time=1087.147..1092.894 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=590466 read=4259 written=3589
+               ->  Nested Loop  (cost=0.44..37697.36 rows=261233 width=4) (actual time=0.595..1000.446 rows=244813.00 loops=1)
+                     Buffers: shared hit=590466 read=4259 written=3589
+                     ->  Seq Scan on streams_2026_06 s  (cost=0.00..7613.69 rows=214222 width=4) (actual time=0.009..34.181 rows=214364.00 loops=1)
+                           Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                           Rows Removed by Filter: 60361
+                           Buffers: shared hit=2806
+                     ->  Memoize  (cost=0.44..0.53 rows=1 width=8) (actual time=0.004..0.004 rows=1.14 loops=214364)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 17058  Misses: 197306  Evictions: 123530  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=587660 read=4259 written=3589
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.52 rows=1 width=8) (actual time=0.004..0.004 rows=1.14 loops=197306)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 197306
+                                 Buffers: shared hit=587660 read=4259 written=3589
+ Planning:
+   Buffers: shared hit=27
+ Planning Time: 0.453 ms
+ Execution Time: 1096.130 ms
+(30 rows)
+
+                                                                                                 QUERY PLAN                                                                                                  
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=40517.11..40517.16 rows=20 width=12) (actual time=790.897..790.900 rows=20.00 loops=1)
+   Buffers: shared hit=594725
+   ->  Sort  (cost=40517.11..40620.47 rows=41344 width=12) (actual time=790.896..790.898 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=594725
+         ->  HashAggregate  (cost=39003.52..39416.96 rows=41344 width=12) (actual time=781.749..787.662 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=594725
+               ->  Nested Loop  (cost=0.44..37697.36 rows=261233 width=4) (actual time=0.036..698.299 rows=244813.00 loops=1)
+                     Buffers: shared hit=594725
+                     ->  Seq Scan on streams_2026_06 s  (cost=0.00..7613.69 rows=214222 width=4) (actual time=0.006..34.752 rows=214364.00 loops=1)
+                           Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                           Rows Removed by Filter: 60361
+                           Buffers: shared hit=2806
+                     ->  Memoize  (cost=0.44..0.53 rows=1 width=8) (actual time=0.003..0.003 rows=1.14 loops=214364)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 17058  Misses: 197306  Evictions: 123530  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=591919
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.52 rows=1 width=8) (actual time=0.002..0.002 rows=1.14 loops=197306)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 197306
+                                 Buffers: shared hit=591919
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.300 ms
+ Execution Time: 790.952 ms
+(30 rows)
+
+                                                                                                 QUERY PLAN                                                                                                  
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=40517.11..40517.16 rows=20 width=12) (actual time=796.542..796.545 rows=20.00 loops=1)
+   Buffers: shared hit=594725
+   ->  Sort  (cost=40517.11..40620.47 rows=41344 width=12) (actual time=796.541..796.543 rows=20.00 loops=1)
+         Sort Key: (count(*)) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=594725
+         ->  HashAggregate  (cost=39003.52..39416.96 rows=41344 width=12) (actual time=787.234..793.456 rows=51913.00 loops=1)
+               Group Key: ta.artist_id
+               Batches: 1  Memory Usage: 4121kB
+               Buffers: shared hit=594725
+               ->  Nested Loop  (cost=0.44..37697.36 rows=261233 width=4) (actual time=0.066..703.214 rows=244813.00 loops=1)
+                     Buffers: shared hit=594725
+                     ->  Seq Scan on streams_2026_06 s  (cost=0.00..7613.69 rows=214222 width=4) (actual time=0.015..33.768 rows=214364.00 loops=1)
+                           Filter: ((ms_played >= 30000) AND (started_at >= '2026-06-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-07-01 00:00:00+05:30'::timestamp with time zone))
+                           Rows Removed by Filter: 60361
+                           Buffers: shared hit=2806
+                     ->  Memoize  (cost=0.44..0.53 rows=1 width=8) (actual time=0.003..0.003 rows=1.14 loops=214364)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 17058  Misses: 197306  Evictions: 123530  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=591919
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.52 rows=1 width=8) (actual time=0.002..0.003 rows=1.14 loops=197306)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 197306
+                                 Buffers: shared hit=591919
+ Planning:
+   Buffers: shared hit=16
+ Planning Time: 0.470 ms
+ Execution Time: 796.625 ms
+(30 rows)
+
+=== R16 on streams_part ===
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=76769.64..76873.00 rows=41344 width=12) (actual time=967.805..970.281 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=707852, temp read=648 written=651
+   ->  GroupAggregate  (cost=70842.08..73599.51 rows=41344 width=12) (actual time=907.853..963.267 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=707852, temp read=648 written=651
+         ->  Sort  (cost=70842.08..71623.41 rows=312532 width=8) (actual time=907.704..935.515 rows=293125.00 loops=1)
+               Sort Key: ta.artist_id, s.user_id
+               Sort Method: external merge  Disk: 5184kB
+               Buffers: shared hit=707852, temp read=648 written=651
+               ->  Nested Loop  (cost=0.44..38044.34 rows=312532 width=8) (actual time=1.049..834.325 rows=293125.00 loops=1)
+                     Buffers: shared hit=707852
+                     ->  Append  (cost=0.00..7521.51 rows=256289 width=8) (actual time=1.016..48.087 rows=256410.00 loops=1)
+                           Buffers: shared hit=2806
+                           ->  Seq Scan on streams_2026_06 s_1  (cost=0.00..6240.06 rows=256288 width=8) (actual time=1.015..31.924 rows=256410.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                 Rows Removed by Filter: 18315
+                                 Buffers: shared hit=2806
+                           ->  Seq Scan on streams_default s_2  (cost=0.00..0.00 rows=1 width=8) (actual time=0.017..0.017 rows=0.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                     ->  Memoize  (cost=0.44..0.52 rows=1 width=8) (actual time=0.003..0.003 rows=1.14 loops=256410)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 21395  Misses: 235015  Evictions: 161264  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=705046
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.51 rows=1 width=8) (actual time=0.002..0.002 rows=1.14 loops=235015)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 235015
+                                 Buffers: shared hit=705046
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.335 ms
+ Execution Time: 973.478 ms
+(35 rows)
+
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=76769.64..76873.00 rows=41344 width=12) (actual time=969.401..971.684 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=707852, temp read=648 written=651
+   ->  GroupAggregate  (cost=70842.08..73599.51 rows=41344 width=12) (actual time=910.359..964.922 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=707852, temp read=648 written=651
+         ->  Sort  (cost=70842.08..71623.41 rows=312532 width=8) (actual time=910.253..937.628 rows=293125.00 loops=1)
+               Sort Key: ta.artist_id, s.user_id
+               Sort Method: external merge  Disk: 5184kB
+               Buffers: shared hit=707852, temp read=648 written=651
+               ->  Nested Loop  (cost=0.44..38044.34 rows=312532 width=8) (actual time=1.043..837.125 rows=293125.00 loops=1)
+                     Buffers: shared hit=707852
+                     ->  Append  (cost=0.00..7521.51 rows=256289 width=8) (actual time=1.007..48.048 rows=256410.00 loops=1)
+                           Buffers: shared hit=2806
+                           ->  Seq Scan on streams_2026_06 s_1  (cost=0.00..6240.06 rows=256288 width=8) (actual time=1.007..31.732 rows=256410.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                 Rows Removed by Filter: 18315
+                                 Buffers: shared hit=2806
+                           ->  Seq Scan on streams_default s_2  (cost=0.00..0.00 rows=1 width=8) (actual time=0.019..0.019 rows=0.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                     ->  Memoize  (cost=0.44..0.52 rows=1 width=8) (actual time=0.003..0.003 rows=1.14 loops=256410)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 21395  Misses: 235015  Evictions: 161264  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=705046
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.51 rows=1 width=8) (actual time=0.002..0.002 rows=1.14 loops=235015)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 235015
+                                 Buffers: shared hit=705046
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.342 ms
+ Execution Time: 975.173 ms
+(35 rows)
+
+                                                                                  QUERY PLAN                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=76769.64..76873.00 rows=41344 width=12) (actual time=981.572..983.814 rows=53573.00 loops=1)
+   Sort Key: (count(DISTINCT s.user_id)) DESC
+   Sort Method: quicksort  Memory: 3211kB
+   Buffers: shared hit=707852, temp read=648 written=651
+   ->  GroupAggregate  (cost=70842.08..73599.51 rows=41344 width=12) (actual time=922.447..977.077 rows=53573.00 loops=1)
+         Group Key: ta.artist_id
+         Buffers: shared hit=707852, temp read=648 written=651
+         ->  Sort  (cost=70842.08..71623.41 rows=312532 width=8) (actual time=922.342..949.829 rows=293125.00 loops=1)
+               Sort Key: ta.artist_id, s.user_id
+               Sort Method: external merge  Disk: 5184kB
+               Buffers: shared hit=707852, temp read=648 written=651
+               ->  Nested Loop  (cost=0.44..38044.34 rows=312532 width=8) (actual time=1.017..847.903 rows=293125.00 loops=1)
+                     Buffers: shared hit=707852
+                     ->  Append  (cost=0.00..7521.51 rows=256289 width=8) (actual time=0.986..48.385 rows=256410.00 loops=1)
+                           Buffers: shared hit=2806
+                           ->  Seq Scan on streams_2026_06 s_1  (cost=0.00..6240.06 rows=256288 width=8) (actual time=0.986..32.190 rows=256410.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                                 Rows Removed by Filter: 18315
+                                 Buffers: shared hit=2806
+                           ->  Seq Scan on streams_default s_2  (cost=0.00..0.00 rows=1 width=8) (actual time=0.017..0.017 rows=0.00 loops=1)
+                                 Filter: (started_at >= '2026-06-03 00:00:00+05:30'::timestamp with time zone)
+                     ->  Memoize  (cost=0.44..0.52 rows=1 width=8) (actual time=0.003..0.003 rows=1.14 loops=256410)
+                           Cache Key: s.track_id
+                           Cache Mode: logical
+                           Hits: 21395  Misses: 235015  Evictions: 161264  Overflows: 0  Memory Usage: 8193kB
+                           Buffers: shared hit=705046
+                           ->  Index Only Scan using pk_track_artists on track_artists ta  (cost=0.43..0.51 rows=1 width=8) (actual time=0.002..0.003 rows=1.14 loops=235015)
+                                 Index Cond: (track_id = s.track_id)
+                                 Heap Fetches: 0
+                                 Index Searches: 235015
+                                 Buffers: shared hit=705046
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.322 ms
+ Execution Time: 987.322 ms
+(35 rows)
+
+=== R04 on streams_part ===
+                                                                                       QUERY PLAN                                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=312.87..312.92 rows=19 width=34) (actual time=0.525..0.528 rows=6.00 loops=1)
+   Buffers: shared hit=24 read=60
+   ->  Sort  (cost=312.87..312.92 rows=19 width=34) (actual time=0.524..0.526 rows=6.00 loops=1)
+         Sort Key: s.started_at DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=24 read=60
+         ->  Nested Loop  (cost=0.85..312.47 rows=19 width=34) (actual time=0.171..0.520 rows=6.00 loops=1)
+               Buffers: shared hit=24 read=60
+               ->  Append  (cost=0.42..152.01 rows=19 width=23) (actual time=0.154..0.476 rows=6.00 loops=1)
+                     Buffers: shared read=60
+                     ->  Index Scan using streams_2025_01_user_id_started_at_idx on streams_2025_01 s_1  (cost=0.42..8.44 rows=1 width=22) (actual time=0.031..0.031 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_02_user_id_started_at_idx on streams_2025_02 s_2  (cost=0.42..8.44 rows=1 width=22) (actual time=0.014..0.014 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_03_user_id_started_at_idx on streams_2025_03 s_3  (cost=0.42..8.44 rows=1 width=22) (actual time=0.052..0.052 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_04_user_id_started_at_idx on streams_2025_04 s_4  (cost=0.42..8.44 rows=1 width=22) (actual time=0.023..0.023 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_05_user_id_started_at_idx on streams_2025_05 s_5  (cost=0.42..8.44 rows=1 width=22) (actual time=0.034..0.039 rows=2.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=5
+                     ->  Index Scan using streams_2025_06_user_id_started_at_idx on streams_2025_06 s_6  (cost=0.42..8.44 rows=1 width=22) (actual time=0.022..0.022 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_07_user_id_started_at_idx on streams_2025_07 s_7  (cost=0.42..8.44 rows=1 width=22) (actual time=0.023..0.023 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=4
+                     ->  Index Scan using streams_2025_08_user_id_started_at_idx on streams_2025_08 s_8  (cost=0.42..8.44 rows=1 width=22) (actual time=0.029..0.029 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_09_user_id_started_at_idx on streams_2025_09 s_9  (cost=0.42..8.44 rows=1 width=22) (actual time=0.032..0.032 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=4
+                     ->  Index Scan using streams_2025_10_user_id_started_at_idx on streams_2025_10 s_10  (cost=0.42..8.44 rows=1 width=22) (actual time=0.027..0.027 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=4
+                     ->  Index Scan using streams_2025_11_user_id_started_at_idx on streams_2025_11 s_11  (cost=0.42..8.44 rows=1 width=22) (actual time=0.019..0.019 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2025_12_user_id_started_at_idx on streams_2025_12 s_12  (cost=0.42..8.44 rows=1 width=22) (actual time=0.021..0.021 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2026_01_user_id_started_at_idx on streams_2026_01 s_13  (cost=0.42..8.44 rows=1 width=22) (actual time=0.021..0.021 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2026_02_user_id_started_at_idx on streams_2026_02 s_14  (cost=0.42..8.44 rows=1 width=22) (actual time=0.026..0.026 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=4
+                     ->  Index Scan using streams_2026_03_user_id_started_at_idx on streams_2026_03 s_15  (cost=0.42..8.44 rows=1 width=22) (actual time=0.020..0.020 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2026_04_user_id_started_at_idx on streams_2026_04 s_16  (cost=0.42..8.44 rows=1 width=22) (actual time=0.024..0.024 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2026_05_user_id_started_at_idx on streams_2026_05 s_17  (cost=0.42..8.44 rows=1 width=22) (actual time=0.022..0.022 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Index Scan using streams_2026_06_user_id_started_at_idx on streams_2026_06 s_18  (cost=0.42..8.44 rows=1 width=22) (actual time=0.022..0.022 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared read=3
+                     ->  Seq Scan on streams_default s_19  (cost=0.00..0.00 rows=1 width=48) (actual time=0.004..0.004 rows=0.00 loops=1)
+                           Filter: (user_id = 1038)
+               ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.007..0.007 rows=1.00 loops=6)
+                     Index Cond: (track_id = s.track_id)
+                     Index Searches: 6
+                     Buffers: shared hit=24
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 1.276 ms
+ Execution Time: 0.571 ms
+(92 rows)
+
+                                                                                       QUERY PLAN                                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=312.87..312.92 rows=19 width=34) (actual time=0.075..0.078 rows=6.00 loops=1)
+   Buffers: shared hit=84
+   ->  Sort  (cost=312.87..312.92 rows=19 width=34) (actual time=0.075..0.077 rows=6.00 loops=1)
+         Sort Key: s.started_at DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=84
+         ->  Nested Loop  (cost=0.85..312.47 rows=19 width=34) (actual time=0.022..0.073 rows=6.00 loops=1)
+               Buffers: shared hit=84
+               ->  Append  (cost=0.42..152.01 rows=19 width=23) (actual time=0.018..0.058 rows=6.00 loops=1)
+                     Buffers: shared hit=60
+                     ->  Index Scan using streams_2025_01_user_id_started_at_idx on streams_2025_01 s_1  (cost=0.42..8.44 rows=1 width=22) (actual time=0.004..0.004 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_02_user_id_started_at_idx on streams_2025_02 s_2  (cost=0.42..8.44 rows=1 width=22) (actual time=0.005..0.005 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_03_user_id_started_at_idx on streams_2025_03 s_3  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_04_user_id_started_at_idx on streams_2025_04 s_4  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_05_user_id_started_at_idx on streams_2025_05 s_5  (cost=0.42..8.44 rows=1 width=22) (actual time=0.004..0.005 rows=2.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=5
+                     ->  Index Scan using streams_2025_06_user_id_started_at_idx on streams_2025_06 s_6  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_07_user_id_started_at_idx on streams_2025_07 s_7  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_08_user_id_started_at_idx on streams_2025_08 s_8  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_09_user_id_started_at_idx on streams_2025_09 s_9  (cost=0.42..8.44 rows=1 width=22) (actual time=0.004..0.004 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_10_user_id_started_at_idx on streams_2025_10 s_10  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.003 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_11_user_id_started_at_idx on streams_2025_11 s_11  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_12_user_id_started_at_idx on streams_2025_12 s_12  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_01_user_id_started_at_idx on streams_2026_01 s_13  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_02_user_id_started_at_idx on streams_2026_02 s_14  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2026_03_user_id_started_at_idx on streams_2026_03 s_15  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_04_user_id_started_at_idx on streams_2026_04 s_16  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_05_user_id_started_at_idx on streams_2026_05 s_17  (cost=0.42..8.44 rows=1 width=22) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_06_user_id_started_at_idx on streams_2026_06 s_18  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Seq Scan on streams_default s_19  (cost=0.00..0.00 rows=1 width=48) (actual time=0.003..0.003 rows=0.00 loops=1)
+                           Filter: (user_id = 1038)
+               ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.002..0.002 rows=1.00 loops=6)
+                     Index Cond: (track_id = s.track_id)
+                     Index Searches: 6
+                     Buffers: shared hit=24
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 1.069 ms
+ Execution Time: 0.113 ms
+(92 rows)
+
+                                                                                       QUERY PLAN                                                                                        
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=312.87..312.92 rows=19 width=34) (actual time=0.044..0.046 rows=6.00 loops=1)
+   Buffers: shared hit=84
+   ->  Sort  (cost=312.87..312.92 rows=19 width=34) (actual time=0.043..0.045 rows=6.00 loops=1)
+         Sort Key: s.started_at DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=84
+         ->  Nested Loop  (cost=0.85..312.47 rows=19 width=34) (actual time=0.012..0.043 rows=6.00 loops=1)
+               Buffers: shared hit=84
+               ->  Append  (cost=0.42..152.01 rows=19 width=23) (actual time=0.009..0.032 rows=6.00 loops=1)
+                     Buffers: shared hit=60
+                     ->  Index Scan using streams_2025_01_user_id_started_at_idx on streams_2025_01 s_1  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_02_user_id_started_at_idx on streams_2025_02 s_2  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_03_user_id_started_at_idx on streams_2025_03 s_3  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_04_user_id_started_at_idx on streams_2025_04 s_4  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_05_user_id_started_at_idx on streams_2025_05 s_5  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.003 rows=2.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=5
+                     ->  Index Scan using streams_2025_06_user_id_started_at_idx on streams_2025_06 s_6  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_07_user_id_started_at_idx on streams_2025_07 s_7  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_08_user_id_started_at_idx on streams_2025_08 s_8  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_09_user_id_started_at_idx on streams_2025_09 s_9  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_10_user_id_started_at_idx on streams_2025_10 s_10  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2025_11_user_id_started_at_idx on streams_2025_11 s_11  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2025_12_user_id_started_at_idx on streams_2025_12 s_12  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_01_user_id_started_at_idx on streams_2026_01 s_13  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_02_user_id_started_at_idx on streams_2026_02 s_14  (cost=0.42..8.44 rows=1 width=22) (actual time=0.002..0.002 rows=1.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=4
+                     ->  Index Scan using streams_2026_03_user_id_started_at_idx on streams_2026_03 s_15  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_04_user_id_started_at_idx on streams_2026_04 s_16  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_05_user_id_started_at_idx on streams_2026_05 s_17  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Index Scan using streams_2026_06_user_id_started_at_idx on streams_2026_06 s_18  (cost=0.42..8.44 rows=1 width=22) (actual time=0.001..0.001 rows=0.00 loops=1)
+                           Index Cond: (user_id = 1038)
+                           Index Searches: 1
+                           Buffers: shared hit=3
+                     ->  Seq Scan on streams_default s_19  (cost=0.00..0.00 rows=1 width=48) (actual time=0.002..0.002 rows=0.00 loops=1)
+                           Filter: (user_id = 1038)
+               ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.001..0.001 rows=1.00 loops=6)
+                     Index Cond: (track_id = s.track_id)
+                     Index Searches: 6
+                     Buffers: shared hit=24
+ Planning:
+   Buffers: shared hit=13
+ Planning Time: 0.956 ms
+ Execution Time: 0.074 ms
+(92 rows)
+
+=== R18 on streams_part ===
+                                                                                    QUERY PLAN                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=107515.59..107515.61 rows=6 width=46) (actual time=515.248..517.119 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=17 read=51059 written=4755
+   ->  Finalize GroupAggregate  (cost=107513.65..107515.52 rows=6 width=46) (actual time=515.216..517.094 rows=6.00 loops=1)
+         Group Key: streams.platform
+         Buffers: shared hit=17 read=51059 written=4755
+         ->  Gather Merge  (cost=107513.65..107515.28 rows=14 width=22) (actual time=515.205..517.080 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=17 read=51059 written=4755
+               ->  Sort  (cost=106513.62..106513.64 rows=6 width=22) (actual time=510.024..510.026 rows=6.00 loops=3)
+                     Sort Key: streams.platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=17 read=51059 written=4755
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=106513.48..106513.54 rows=6 width=22) (actual time=509.980..509.983 rows=6.00 loops=3)
+                           Group Key: streams.platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared hit=1 read=51059 written=4755
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Append  (cost=0.00..90888.45 rows=2083338 width=7) (actual time=0.124..288.847 rows=1666666.67 loops=3)
+                                 Buffers: shared hit=1 read=51059 written=4755
+                                 ->  Seq Scan on streams_default streams_19  (cost=0.00..0.00 rows=1 width=33) (actual time=0.068..0.068 rows=0.00 loops=1)
+                                 ->  Parallel Seq Scan on streams_2025_01 streams_1  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.126..33.958 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=633
+                                 ->  Parallel Seq Scan on streams_2025_08 streams_8  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.097..34.392 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=681
+                                 ->  Parallel Seq Scan on streams_2025_10 streams_10  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.223..29.025 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=15
+                                 ->  Parallel Seq Scan on streams_2026_01 streams_13  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.113..28.104 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=6
+                                 ->  Parallel Seq Scan on streams_2026_03 streams_15  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.116..31.096 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=464
+                                 ->  Parallel Seq Scan on streams_2026_05 streams_17  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.048..30.912 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899 written=588
+                                 ->  Parallel Seq Scan on streams_2025_03 streams_3  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.133..30.355 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899 written=412
+                                 ->  Parallel Seq Scan on streams_2025_05 streams_5  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.118..29.230 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899 written=314
+                                 ->  Parallel Seq Scan on streams_2025_07 streams_7  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.119..29.394 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_12 streams_12  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.099..31.450 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_06 streams_6  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.135..11.739 rows=91575.33 loops=3)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_11 streams_11  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.085..16.100 rows=137363.00 loops=2)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2026_06 streams_18  (cost=0.00..4422.03 rows=161603 width=7) (actual time=0.037..29.598 rows=274725.00 loops=1)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_04 streams_4  (cost=0.00..4421.04 rows=161604 width=7) (actual time=0.025..25.649 rows=274726.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2025_09 streams_9  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.023..29.943 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805 written=949
+                                 ->  Parallel Seq Scan on streams_2026_04 streams_16  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.024..24.527 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805 written=7
+                                 ->  Parallel Seq Scan on streams_2026_02 streams_14  (cost=0.00..4127.29 rows=150829 width=7) (actual time=0.024..23.622 rows=256410.00 loops=1)
+                                       Buffers: shared hit=1 read=2618 written=8
+                                 ->  Parallel Seq Scan on streams_2025_02 streams_2  (cost=0.00..4126.30 rows=150830 width=7) (actual time=0.078..28.808 rows=256411.00 loops=1)
+                                       Buffers: shared read=2618 written=678
+ Planning:
+   Buffers: shared hit=59 dirtied=2
+ Planning Time: 0.334 ms
+ Execution Time: 517.254 ms
+(66 rows)
+
+                                                                                    QUERY PLAN                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=107515.59..107515.61 rows=6 width=46) (actual time=537.386..539.472 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=15 read=51061
+   ->  Finalize GroupAggregate  (cost=107513.65..107515.52 rows=6 width=46) (actual time=537.375..539.468 rows=6.00 loops=1)
+         Group Key: streams.platform
+         Buffers: shared hit=15 read=51061
+         ->  Gather Merge  (cost=107513.65..107515.28 rows=14 width=22) (actual time=537.364..539.455 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=15 read=51061
+               ->  Sort  (cost=106513.62..106513.64 rows=6 width=22) (actual time=528.636..528.639 rows=6.00 loops=3)
+                     Sort Key: streams.platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=15 read=51061
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=106513.48..106513.54 rows=6 width=22) (actual time=528.568..528.571 rows=6.00 loops=3)
+                           Group Key: streams.platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared read=51060
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Append  (cost=0.00..90888.45 rows=2083338 width=7) (actual time=0.092..297.341 rows=1666666.67 loops=3)
+                                 Buffers: shared read=51060
+                                 ->  Seq Scan on streams_default streams_19  (cost=0.00..0.00 rows=1 width=33) (actual time=0.042..0.042 rows=0.00 loops=1)
+                                 ->  Parallel Seq Scan on streams_2025_01 streams_1  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.068..31.530 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_08 streams_8  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.097..31.559 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_10 streams_10  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.102..31.761 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_01 streams_13  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.088..31.859 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_03 streams_15  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.130..31.852 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_05 streams_17  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.089..31.318 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_03 streams_3  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.210..31.076 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_05 streams_5  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.128..31.813 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_07 streams_7  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.161..30.323 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_12 streams_12  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.142..31.067 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_06 streams_6  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.102..9.644 rows=91575.33 loops=3)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_11 streams_11  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.071..14.837 rows=137363.00 loops=2)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2026_06 streams_18  (cost=0.00..4422.03 rows=161603 width=7) (actual time=0.029..27.821 rows=274725.00 loops=1)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_04 streams_4  (cost=0.00..4421.04 rows=161604 width=7) (actual time=0.030..28.826 rows=274726.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2025_09 streams_9  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.028..28.179 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2026_04 streams_16  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.026..28.368 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2026_02 streams_14  (cost=0.00..4127.29 rows=150829 width=7) (actual time=0.031..25.931 rows=256410.00 loops=1)
+                                       Buffers: shared read=2619
+                                 ->  Parallel Seq Scan on streams_2025_02 streams_2  (cost=0.00..4126.30 rows=150830 width=7) (actual time=0.067..25.925 rows=256411.00 loops=1)
+                                       Buffers: shared read=2618
+ Planning:
+   Buffers: shared read=5
+ Planning Time: 0.426 ms
+ Execution Time: 539.521 ms
+(66 rows)
+
+                                                                                    QUERY PLAN                                                                                    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=107515.59..107515.61 rows=6 width=46) (actual time=533.528..535.521 rows=6.00 loops=1)
+   Sort Key: (count(*)) DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=15 read=51061
+   ->  Finalize GroupAggregate  (cost=107513.65..107515.52 rows=6 width=46) (actual time=533.517..535.517 rows=6.00 loops=1)
+         Group Key: streams.platform
+         Buffers: shared hit=15 read=51061
+         ->  Gather Merge  (cost=107513.65..107515.28 rows=14 width=22) (actual time=533.506..535.504 rows=18.00 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               Buffers: shared hit=15 read=51061
+               ->  Sort  (cost=106513.62..106513.64 rows=6 width=22) (actual time=526.306..526.309 rows=6.00 loops=3)
+                     Sort Key: streams.platform
+                     Sort Method: quicksort  Memory: 25kB
+                     Buffers: shared hit=15 read=51061
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Partial HashAggregate  (cost=106513.48..106513.54 rows=6 width=22) (actual time=526.271..526.274 rows=6.00 loops=3)
+                           Group Key: streams.platform
+                           Batches: 1  Memory Usage: 32kB
+                           Buffers: shared read=51060
+                           Worker 0:  Batches: 1  Memory Usage: 32kB
+                           Worker 1:  Batches: 1  Memory Usage: 32kB
+                           ->  Parallel Append  (cost=0.00..90888.45 rows=2083338 width=7) (actual time=0.103..294.454 rows=1666666.67 loops=3)
+                                 Buffers: shared read=51060
+                                 ->  Seq Scan on streams_default streams_19  (cost=0.00..0.00 rows=1 width=33) (actual time=0.048..0.048 rows=0.00 loops=1)
+                                 ->  Parallel Seq Scan on streams_2025_01 streams_1  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.144..32.103 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_08 streams_8  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.089..31.224 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_10 streams_10  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.118..31.253 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_01 streams_13  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.172..31.738 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_03 streams_15  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.129..29.841 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2026_05 streams_17  (cost=0.00..4568.90 rows=166990 width=7) (actual time=0.090..31.379 rows=283883.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_03 streams_3  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.115..31.388 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_05 streams_5  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.112..31.833 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_07 streams_7  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.094..31.467 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_12 streams_12  (cost=0.00..4568.89 rows=166989 width=7) (actual time=0.118..31.051 rows=283882.00 loops=1)
+                                       Buffers: shared read=2899
+                                 ->  Parallel Seq Scan on streams_2025_06 streams_6  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.091..9.831 rows=91575.33 loops=3)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_11 streams_11  (cost=0.00..4422.04 rows=161604 width=7) (actual time=0.064..14.271 rows=137363.00 loops=2)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2026_06 streams_18  (cost=0.00..4422.03 rows=161603 width=7) (actual time=0.033..28.157 rows=274725.00 loops=1)
+                                       Buffers: shared read=2806
+                                 ->  Parallel Seq Scan on streams_2025_04 streams_4  (cost=0.00..4421.04 rows=161604 width=7) (actual time=0.025..28.016 rows=274726.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2025_09 streams_9  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.032..27.741 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2026_04 streams_16  (cost=0.00..4421.03 rows=161603 width=7) (actual time=0.026..27.411 rows=274725.00 loops=1)
+                                       Buffers: shared read=2805
+                                 ->  Parallel Seq Scan on streams_2026_02 streams_14  (cost=0.00..4127.29 rows=150829 width=7) (actual time=0.032..25.960 rows=256410.00 loops=1)
+                                       Buffers: shared read=2619
+                                 ->  Parallel Seq Scan on streams_2025_02 streams_2  (cost=0.00..4126.30 rows=150830 width=7) (actual time=0.027..25.024 rows=256411.00 loops=1)
+                                       Buffers: shared read=2618
+ Planning:
+   Buffers: shared read=5
+ Planning Time: 0.391 ms
+ Execution Time: 535.567 ms
+(66 rows)
+
+psql:sql/08_partitioning.sql:161: NOTICE:  drop cascades to table streams
+DROP SCHEMA
+=== spotify_part dropped; spotify.streams is unchanged ===

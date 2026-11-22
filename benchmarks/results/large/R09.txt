@@ -1,0 +1,108 @@
+=== R09 run 1 ===
+Limit  (cost=81.49..81.51 rows=5 width=55) (actual time=1.422..1.423 rows=5.00 loops=1)
+  Buffers: shared hit=37 read=15
+  ->  Sort  (cost=81.49..81.51 rows=6 width=55) (actual time=1.421..1.422 rows=5.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=37 read=15
+        ->  GroupAggregate  (cost=81.25..81.42 rows=6 width=55) (actual time=1.404..1.407 rows=5.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=34 read=15
+              ->  Sort  (cost=81.25..81.27 rows=6 width=27) (actual time=1.391..1.392 rows=5.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=34 read=15
+                    ->  Nested Loop  (cost=1.15..81.17 rows=6 width=27) (actual time=0.282..1.375 rows=5.00 loops=1)
+                          Buffers: shared hit=28 read=15
+                          ->  Nested Loop  (cost=0.86..79.31 rows=6 width=8) (actual time=0.270..1.333 rows=5.00 loops=1)
+                                Buffers: shared hit=13 read=15
+                                ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..28.57 rows=6 width=8) (actual time=0.013..0.022 rows=5.00 loops=1)
+                                      Index Cond: ((user_id = 1038) AND (started_at >= '2025-01-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-01-01 00:00:00+05:30'::timestamp with time zone))
+                                      Index Searches: 1
+                                      Buffers: shared hit=8
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.43..8.45 rows=1 width=8) (actual time=0.261..0.261 rows=1.00 loops=5)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Rows Removed by Filter: 0
+                                      Index Searches: 5
+                                      Buffers: shared hit=5 read=15
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.29..0.31 rows=1 width=23) (actual time=0.008..0.008 rows=1.00 loops=5)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 5
+                                Buffers: shared hit=15
+Planning:
+  Buffers: shared hit=344 read=4
+Planning Time: 2.138 ms
+Execution Time: 1.477 ms
+=== R09 run 2 ===
+Limit  (cost=81.49..81.51 rows=5 width=55) (actual time=0.156..0.157 rows=5.00 loops=1)
+  Buffers: shared hit=52
+  ->  Sort  (cost=81.49..81.51 rows=6 width=55) (actual time=0.156..0.156 rows=5.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=52
+        ->  GroupAggregate  (cost=81.25..81.42 rows=6 width=55) (actual time=0.140..0.144 rows=5.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=49
+              ->  Sort  (cost=81.25..81.27 rows=6 width=27) (actual time=0.127..0.127 rows=5.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=49
+                    ->  Nested Loop  (cost=1.15..81.17 rows=6 width=27) (actual time=0.037..0.111 rows=5.00 loops=1)
+                          Buffers: shared hit=43
+                          ->  Nested Loop  (cost=0.86..79.31 rows=6 width=8) (actual time=0.026..0.071 rows=5.00 loops=1)
+                                Buffers: shared hit=28
+                                ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..28.57 rows=6 width=8) (actual time=0.012..0.022 rows=5.00 loops=1)
+                                      Index Cond: ((user_id = 1038) AND (started_at >= '2025-01-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-01-01 00:00:00+05:30'::timestamp with time zone))
+                                      Index Searches: 1
+                                      Buffers: shared hit=8
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.43..8.45 rows=1 width=8) (actual time=0.009..0.009 rows=1.00 loops=5)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Rows Removed by Filter: 0
+                                      Index Searches: 5
+                                      Buffers: shared hit=20
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.29..0.31 rows=1 width=23) (actual time=0.007..0.008 rows=1.00 loops=5)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 5
+                                Buffers: shared hit=15
+Planning:
+  Buffers: shared hit=348
+Planning Time: 1.444 ms
+Execution Time: 0.210 ms
+=== R09 run 3 ===
+Limit  (cost=81.49..81.51 rows=5 width=55) (actual time=0.204..0.206 rows=5.00 loops=1)
+  Buffers: shared hit=52
+  ->  Sort  (cost=81.49..81.51 rows=6 width=55) (actual time=0.204..0.204 rows=5.00 loops=1)
+        Sort Key: (round(((sum(s.ms_played))::numeric / 60000.0), 1)) DESC
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared hit=52
+        ->  GroupAggregate  (cost=81.25..81.42 rows=6 width=55) (actual time=0.173..0.177 rows=5.00 loops=1)
+              Group Key: ta.artist_id, ar.artist_name
+              Buffers: shared hit=49
+              ->  Sort  (cost=81.25..81.27 rows=6 width=27) (actual time=0.158..0.158 rows=5.00 loops=1)
+                    Sort Key: ta.artist_id, ar.artist_name
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=49
+                    ->  Nested Loop  (cost=1.15..81.17 rows=6 width=27) (actual time=0.049..0.137 rows=5.00 loops=1)
+                          Buffers: shared hit=43
+                          ->  Nested Loop  (cost=0.86..79.31 rows=6 width=8) (actual time=0.035..0.090 rows=5.00 loops=1)
+                                Buffers: shared hit=28
+                                ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..28.57 rows=6 width=8) (actual time=0.018..0.029 rows=5.00 loops=1)
+                                      Index Cond: ((user_id = 1038) AND (started_at >= '2025-01-01 00:00:00+05:30'::timestamp with time zone) AND (started_at < '2026-01-01 00:00:00+05:30'::timestamp with time zone))
+                                      Index Searches: 1
+                                      Buffers: shared hit=8
+                                ->  Index Scan using pk_track_artists on track_artists ta  (cost=0.43..8.45 rows=1 width=8) (actual time=0.011..0.011 rows=1.00 loops=5)
+                                      Index Cond: (track_id = s.track_id)
+                                      Filter: ((role)::text = 'PRIMARY'::text)
+                                      Rows Removed by Filter: 0
+                                      Index Searches: 5
+                                      Buffers: shared hit=20
+                          ->  Index Scan using artists_pkey on artists ar  (cost=0.29..0.31 rows=1 width=23) (actual time=0.009..0.009 rows=1.00 loops=5)
+                                Index Cond: (artist_id = ta.artist_id)
+                                Index Searches: 5
+                                Buffers: shared hit=15
+Planning:
+  Buffers: shared hit=348
+Planning Time: 2.081 ms
+Execution Time: 0.327 ms

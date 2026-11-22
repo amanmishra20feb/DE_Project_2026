@@ -1,0 +1,24 @@
+=== R22 run 1 ===
+Index Scan using ix_mv_playlist_duplicates_order on mv_playlist_duplicates  (cost=0.29..1552.91 rows=36000 width=16) (actual time=0.249..9.606 rows=36000.00 loops=1)
+  Index Searches: 1
+  Buffers: shared hit=36000 read=139
+Planning:
+  Buffers: shared hit=108
+Planning Time: 0.347 ms
+Execution Time: 10.864 ms
+=== R22 run 2 ===
+Index Scan using ix_mv_playlist_duplicates_order on mv_playlist_duplicates  (cost=0.29..1552.91 rows=36000 width=16) (actual time=0.011..7.823 rows=36000.00 loops=1)
+  Index Searches: 1
+  Buffers: shared hit=36139
+Planning:
+  Buffers: shared hit=106
+Planning Time: 0.336 ms
+Execution Time: 9.065 ms
+=== R22 run 3 ===
+Index Scan using ix_mv_playlist_duplicates_order on mv_playlist_duplicates  (cost=0.29..1552.91 rows=36000 width=16) (actual time=0.012..7.720 rows=36000.00 loops=1)
+  Index Searches: 1
+  Buffers: shared hit=36139
+Planning:
+  Buffers: shared hit=106
+Planning Time: 0.342 ms
+Execution Time: 8.964 ms

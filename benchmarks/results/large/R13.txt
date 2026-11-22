@@ -1,0 +1,60 @@
+=== R13 run 1 ===
+Gather  (cost=1000.43..45040.57 rows=62254 width=24) (actual time=68.672..101.608 rows=37933.00 loops=1)
+  Workers Planned: 1
+  Workers Launched: 1
+  Buffers: shared hit=376241 read=3898
+  ->  Nested Loop Anti Join  (cost=0.43..37815.17 rows=36620 width=24) (actual time=69.606..94.342 rows=18966.50 loops=2)
+        Buffers: shared hit=376241 read=3898
+        ->  Parallel Seq Scan on playlists p  (cost=0.00..2795.47 rows=74506 width=24) (actual time=0.072..9.522 rows=63076.50 loops=2)
+              Filter: is_public
+              Rows Removed by Filter: 36924
+              Buffers: shared read=1619
+        ->  Index Only Scan using ix_streams_playlist on streams s  (cost=0.43..0.89 rows=22 width=4) (actual time=0.001..0.001 rows=0.70 loops=126153)
+              Index Cond: (playlist_id = p.playlist_id)
+              Heap Fetches: 0
+              Index Searches: 126153
+              Buffers: shared hit=376241 read=2279
+Planning:
+  Buffers: shared hit=276 read=32
+Planning Time: 2.612 ms
+Execution Time: 102.963 ms
+=== R13 run 2 ===
+Gather  (cost=1000.43..45040.57 rows=62254 width=24) (actual time=52.516..75.689 rows=37933.00 loops=1)
+  Workers Planned: 1
+  Workers Launched: 1
+  Buffers: shared hit=380139
+  ->  Nested Loop Anti Join  (cost=0.43..37815.17 rows=36620 width=24) (actual time=47.921..70.635 rows=18966.50 loops=2)
+        Buffers: shared hit=380139
+        ->  Parallel Seq Scan on playlists p  (cost=0.00..2795.47 rows=74506 width=24) (actual time=0.005..8.419 rows=63076.50 loops=2)
+              Filter: is_public
+              Rows Removed by Filter: 36924
+              Buffers: shared hit=1619
+        ->  Index Only Scan using ix_streams_playlist on streams s  (cost=0.43..0.89 rows=22 width=4) (actual time=0.001..0.001 rows=0.70 loops=126153)
+              Index Cond: (playlist_id = p.playlist_id)
+              Heap Fetches: 0
+              Index Searches: 126153
+              Buffers: shared hit=378520
+Planning:
+  Buffers: shared hit=308
+Planning Time: 0.900 ms
+Execution Time: 77.034 ms
+=== R13 run 3 ===
+Gather  (cost=1000.43..45040.57 rows=62254 width=24) (actual time=45.871..74.888 rows=37933.00 loops=1)
+  Workers Planned: 1
+  Workers Launched: 1
+  Buffers: shared hit=380139
+  ->  Nested Loop Anti Join  (cost=0.43..37815.17 rows=36620 width=24) (actual time=46.422..70.112 rows=18966.50 loops=2)
+        Buffers: shared hit=380139
+        ->  Parallel Seq Scan on playlists p  (cost=0.00..2795.47 rows=74506 width=24) (actual time=0.005..8.367 rows=63076.50 loops=2)
+              Filter: is_public
+              Rows Removed by Filter: 36924
+              Buffers: shared hit=1619
+        ->  Index Only Scan using ix_streams_playlist on streams s  (cost=0.43..0.89 rows=22 width=4) (actual time=0.001..0.001 rows=0.70 loops=126153)
+              Index Cond: (playlist_id = p.playlist_id)
+              Heap Fetches: 0
+              Index Searches: 126153
+              Buffers: shared hit=378520
+Planning:
+  Buffers: shared hit=308
+Planning Time: 0.854 ms
+Execution Time: 76.249 ms

@@ -1,0 +1,105 @@
+=== R25 run 1 ===
+Limit  (cost=34932.49..34932.62 rows=50 width=31) (actual time=87.751..87.773 rows=50.00 loops=1)
+  Buffers: shared hit=54872 read=6949
+  ->  Sort  (cost=34932.49..35036.14 rows=41458 width=31) (actual time=87.750..87.769 rows=50.00 loops=1)
+        Sort Key: (count(s.stream_id)) DESC, a.release_date DESC
+        Sort Method: top-N heapsort  Memory: 31kB
+        Buffers: shared hit=54872 read=6949
+        ->  HashAggregate  (cost=33140.71..33555.29 rows=41458 width=31) (actual time=85.000..86.349 rows=11165.00 loops=1)
+              Group Key: t.track_id, a.release_date
+              Batches: 1  Memory Usage: 1817kB
+              Buffers: shared hit=54866 read=6949
+              ->  Gather  (cost=1000.86..32829.77 rows=41458 width=31) (actual time=0.199..80.256 rows=20312.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=54866 read=6949
+                    ->  Nested Loop Left Join  (cost=0.86..27683.97 rows=24387 width=31) (actual time=0.111..79.228 rows=10156.00 loops=2)
+                          Buffers: shared hit=54866 read=6949
+                          ->  Nested Loop  (cost=0.43..22423.26 rows=6635 width=23) (actual time=0.096..51.208 rows=5582.50 loops=2)
+                                Buffers: shared hit=7374 read=3379
+                                ->  Parallel Seq Scan on albums a  (cost=0.00..4448.71 rows=1171 width=8) (actual time=0.006..8.188 rows=998.50 loops=2)
+                                      Filter: (release_date >= '2026-05-31'::date)
+                                      Rows Removed by Filter: 119002
+                                      Buffers: shared hit=2684
+                                ->  Index Scan using uq_tracks_position on tracks t  (cost=0.43..15.26 rows=9 width=23) (actual time=0.042..0.042 rows=5.59 loops=1997)
+                                      Index Cond: (album_id = a.album_id)
+                                      Index Searches: 1997
+                                      Buffers: shared hit=4690 read=3379
+                          ->  Index Scan using ix_streams_track_time on streams s  (cost=0.43..0.74 rows=5 width=12) (actual time=0.004..0.005 rows=1.58 loops=11165)
+                                Index Cond: (track_id = t.track_id)
+                                Index Searches: 11165
+                                Buffers: shared hit=47492 read=3570
+Planning:
+  Buffers: shared hit=426 read=7
+Planning Time: 1.796 ms
+Execution Time: 87.953 ms
+=== R25 run 2 ===
+Limit  (cost=34932.49..34932.62 rows=50 width=31) (actual time=37.654..37.677 rows=50.00 loops=1)
+  Buffers: shared hit=61806 read=15
+  ->  Sort  (cost=34932.49..35036.14 rows=41458 width=31) (actual time=37.653..37.672 rows=50.00 loops=1)
+        Sort Key: (count(s.stream_id)) DESC, a.release_date DESC
+        Sort Method: top-N heapsort  Memory: 31kB
+        Buffers: shared hit=61806 read=15
+        ->  HashAggregate  (cost=33140.71..33555.29 rows=41458 width=31) (actual time=34.854..36.260 rows=11165.00 loops=1)
+              Group Key: t.track_id, a.release_date
+              Batches: 1  Memory Usage: 1817kB
+              Buffers: shared hit=61800 read=15
+              ->  Gather  (cost=1000.86..32829.77 rows=41458 width=31) (actual time=0.171..30.324 rows=20312.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=61800 read=15
+                    ->  Nested Loop Left Join  (cost=0.86..27683.97 rows=24387 width=31) (actual time=0.033..29.397 rows=10156.00 loops=2)
+                          Buffers: shared hit=61800 read=15
+                          ->  Nested Loop  (cost=0.43..22423.26 rows=6635 width=23) (actual time=0.020..13.279 rows=5582.50 loops=2)
+                                Buffers: shared hit=10753
+                                ->  Parallel Seq Scan on albums a  (cost=0.00..4448.71 rows=1171 width=8) (actual time=0.011..7.914 rows=998.50 loops=2)
+                                      Filter: (release_date >= '2026-05-31'::date)
+                                      Rows Removed by Filter: 119002
+                                      Buffers: shared hit=2684
+                                ->  Index Scan using uq_tracks_position on tracks t  (cost=0.43..15.26 rows=9 width=23) (actual time=0.004..0.005 rows=5.59 loops=1997)
+                                      Index Cond: (album_id = a.album_id)
+                                      Index Searches: 1997
+                                      Buffers: shared hit=8069
+                          ->  Index Scan using ix_streams_track_time on streams s  (cost=0.43..0.74 rows=5 width=12) (actual time=0.002..0.003 rows=1.58 loops=11165)
+                                Index Cond: (track_id = t.track_id)
+                                Index Searches: 11165
+                                Buffers: shared hit=51047 read=15
+Planning:
+  Buffers: shared hit=433
+Planning Time: 1.419 ms
+Execution Time: 37.854 ms
+=== R25 run 3 ===
+Limit  (cost=34932.49..34932.62 rows=50 width=31) (actual time=37.458..37.480 rows=50.00 loops=1)
+  Buffers: shared hit=61821
+  ->  Sort  (cost=34932.49..35036.14 rows=41458 width=31) (actual time=37.457..37.476 rows=50.00 loops=1)
+        Sort Key: (count(s.stream_id)) DESC, a.release_date DESC
+        Sort Method: top-N heapsort  Memory: 31kB
+        Buffers: shared hit=61821
+        ->  HashAggregate  (cost=33140.71..33555.29 rows=41458 width=31) (actual time=34.755..36.144 rows=11165.00 loops=1)
+              Group Key: t.track_id, a.release_date
+              Batches: 1  Memory Usage: 1817kB
+              Buffers: shared hit=61815
+              ->  Gather  (cost=1000.86..32829.77 rows=41458 width=31) (actual time=0.168..30.069 rows=20312.00 loops=1)
+                    Workers Planned: 1
+                    Workers Launched: 1
+                    Buffers: shared hit=61815
+                    ->  Nested Loop Left Join  (cost=0.86..27683.97 rows=24387 width=31) (actual time=0.035..29.312 rows=10156.00 loops=2)
+                          Buffers: shared hit=61815
+                          ->  Nested Loop  (cost=0.43..22423.26 rows=6635 width=23) (actual time=0.022..13.535 rows=5582.50 loops=2)
+                                Buffers: shared hit=10753
+                                ->  Parallel Seq Scan on albums a  (cost=0.00..4448.71 rows=1171 width=8) (actual time=0.014..8.145 rows=998.50 loops=2)
+                                      Filter: (release_date >= '2026-05-31'::date)
+                                      Rows Removed by Filter: 119002
+                                      Buffers: shared hit=2684
+                                ->  Index Scan using uq_tracks_position on tracks t  (cost=0.43..15.26 rows=9 width=23) (actual time=0.004..0.005 rows=5.59 loops=1997)
+                                      Index Cond: (album_id = a.album_id)
+                                      Index Searches: 1997
+                                      Buffers: shared hit=8069
+                          ->  Index Scan using ix_streams_track_time on streams s  (cost=0.43..0.74 rows=5 width=12) (actual time=0.002..0.003 rows=1.58 loops=11165)
+                                Index Cond: (track_id = t.track_id)
+                                Index Searches: 11165
+                                Buffers: shared hit=51062
+Planning:
+  Buffers: shared hit=433
+Planning Time: 1.367 ms
+Execution Time: 37.661 ms

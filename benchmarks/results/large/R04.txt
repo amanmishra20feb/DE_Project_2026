@@ -1,0 +1,51 @@
+=== R04 run 1 ===
+Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.588..1.440 rows=6.00 loops=1)
+  Buffers: shared hit=16 read=19 dirtied=1
+  ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.587..1.438 rows=6.00 loops=1)
+        Buffers: shared hit=16 read=19 dirtied=1
+        ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.411..0.453 rows=6.00 loops=1)
+              Index Cond: (user_id = 1038)
+              Index Searches: 1
+              Buffers: shared hit=4 read=7 dirtied=1
+        ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.163..0.163 rows=1.00 loops=6)
+              Index Cond: (track_id = s.track_id)
+              Index Searches: 6
+              Buffers: shared hit=12 read=12
+Planning:
+  Buffers: shared hit=398 read=1
+Planning Time: 1.194 ms
+Execution Time: 1.472 ms
+=== R04 run 2 ===
+Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.018..0.059 rows=6.00 loops=1)
+  Buffers: shared hit=33
+  ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.017..0.058 rows=6.00 loops=1)
+        Buffers: shared hit=33
+        ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.009..0.016 rows=6.00 loops=1)
+              Index Cond: (user_id = 1038)
+              Index Searches: 1
+              Buffers: shared hit=9
+        ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.006..0.006 rows=1.00 loops=6)
+              Index Cond: (track_id = s.track_id)
+              Index Searches: 6
+              Buffers: shared hit=24
+Planning:
+  Buffers: shared hit=399
+Planning Time: 1.090 ms
+Execution Time: 0.089 ms
+=== R04 run 3 ===
+Limit  (cost=0.86..116.59 rows=9 width=33) (actual time=0.018..0.060 rows=6.00 loops=1)
+  Buffers: shared hit=33
+  ->  Nested Loop  (cost=0.86..116.59 rows=9 width=33) (actual time=0.017..0.059 rows=6.00 loops=1)
+        Buffers: shared hit=33
+        ->  Index Scan using ix_streams_user_time on streams s  (cost=0.43..40.59 rows=9 width=22) (actual time=0.009..0.017 rows=6.00 loops=1)
+              Index Cond: (user_id = 1038)
+              Index Searches: 1
+              Buffers: shared hit=9
+        ->  Index Scan using tracks_pkey on tracks t  (cost=0.43..8.45 rows=1 width=19) (actual time=0.006..0.006 rows=1.00 loops=6)
+              Index Cond: (track_id = s.track_id)
+              Index Searches: 6
+              Buffers: shared hit=24
+Planning:
+  Buffers: shared hit=399
+Planning Time: 1.092 ms
+Execution Time: 0.089 ms

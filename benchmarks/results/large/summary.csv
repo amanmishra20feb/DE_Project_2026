@@ -1,0 +1,31 @@
+query_id,type,avg_ms,median_ms,min_ms,max_ms,scan_nodes
+R01,READ,5.935,1.178,1.176,15.451,Index Only Scan using ix_track_artists_artist on track_artists | Index Only Scan using ix_streams_track_time on streams | Index Scan using tracks_pkey on tracks
+R02,READ,0.143,0.045,0.045,0.340,Index Scan using uq_tracks_position on tracks
+R03,READ,0.378,0.168,0.164,0.802,Index Scan using ix_tracks_popularity on tracks
+R04,READ,0.550,0.089,0.089,1.472,Index Scan using ix_streams_user_time on streams | Index Scan using tracks_pkey on tracks
+R05,READ,1.125,0.316,0.284,2.776,Index Scan using pk_playlist_tracks on playlist_tracks | Index Scan using tracks_pkey on tracks | Index Scan using pk_track_artists on track_artists | Index Scan using artists_pkey on artists
+R06,READ,0.107,0.106,0.106,0.108,Index Scan using pk_liked_tracks on liked_tracks | Index Scan using tracks_pkey on tracks
+R07,READ,176.709,176.599,163.397,190.131,Seq Scan on track_artists | Index Only Scan using ix_streams_started_cov on streams
+R08,READ,4.420,3.758,2.803,6.698,Index Only Scan using ix_track_artists_artist on track_artists | Index Only Scan using ix_streams_track_time on streams | Index Scan using tracks_pkey on tracks
+R09,READ,0.671,0.327,0.210,1.477,Index Scan using ix_streams_user_time on streams | Index Scan using pk_track_artists on track_artists | Index Scan using artists_pkey on artists
+R10,READ,140.335,141.323,135.588,144.094,Index Only Scan using ix_streams_started_cov on streams
+R11,READ,0.611,0.151,0.144,1.539,Index Only Scan using pk_artist_follows on artist_follows | Index Scan using ix_albums_artist_date on albums | Index Scan using artists_pkey on artists
+R12,READ,127.196,63.691,62.295,255.601,Index Only Scan using ix_streams_started_cov on streams | Index Scan using tracks_pkey on tracks | Index Scan using users_pkey on users
+R13,READ,85.415,77.034,76.249,102.963,Seq Scan on playlists | Index Only Scan using ix_streams_playlist on streams
+R14,READ,175.441,174.510,173.899,177.914,Seq Scan on playlist_tracks | Seq Scan on playlists
+R15,READ,21.806,6.569,5.925,52.923,Index Only Scan using ix_artist_follows_artist on artist_follows | Index Only Scan using pk_artist_follows on artist_follows | Index Scan using artists_pkey on artists
+R16,READ,239.480,238.404,236.864,243.173,Seq Scan on track_artists | Index Only Scan using ix_streams_started_cov on streams
+R17,READ,232.753,231.391,226.300,240.569,Index Only Scan using ix_streams_started_cov on streams | Seq Scan on users
+R18,READ,456.622,489.401,389.069,491.395,Seq Scan on streams
+R19,READ,877.541,423.251,419.646,1789.725,Seq Scan on artists | Index Only Scan using ix_track_artists_artist on track_artists | Index Only Scan using ix_streams_track_time on streams
+R20,READ,1638.040,1527.863,1525.049,1861.207,Seq Scan on streams | Seq Scan on users
+R21,READ,0.213,0.060,0.055,0.524,Index Scan using uq_tracks_isrc on tracks | Index Scan using albums_pkey on albums
+R22,READ,9.631,9.065,8.964,10.864,Index Scan using ix_mv_playlist_duplicates_order on mv_playlist_duplicates
+R23,READ,27.327,26.606,26.301,29.073,Index Only Scan using ix_streams_started_cov on streams
+R24,READ,185.932,187.702,180.784,189.309,Seq Scan on tracks | Seq Scan on albums
+R25,READ,54.489,37.854,37.661,87.953,Seq Scan on albums | Index Scan using uq_tracks_position on tracks | Index Scan using ix_streams_track_time on streams
+W01,WRITE,1.633,1.290,1.156,2.454,(no scan)
+W02,WRITE,1.286,1.119,1.073,1.666,(no scan)
+W03,WRITE,1.472,1.078,1.000,2.338,Index Scan using playlists_pkey on playlists | Index Only Scan using pk_playlist_tracks on playlist_tracks
+W04,WRITE,1171.813,1169.883,1165.870,1179.685,Index Scan using artists_pkey on artists | Seq Scan on track_artists | Index Only Scan using ix_streams_started_cov on streams
+W05,WRITE,0.429,0.408,0.309,0.569,Index Scan using tracks_pkey on tracks | Index Scan using uq_tracks_position on tracks | Index Scan using ix_playlist_tracks_track on playlist_tracks

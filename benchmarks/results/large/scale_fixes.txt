@@ -1,0 +1,11 @@
+SET
+DROP MATERIALIZED VIEW
+SELECT 36000
+CREATE INDEX
+CREATE INDEX
+ANALYZE
+ rows_original | rows_view | only_original | only_view 
+---------------+-----------+---------------+-----------
+         36000 |     36000 |             0 |         0
+(1 row)
+

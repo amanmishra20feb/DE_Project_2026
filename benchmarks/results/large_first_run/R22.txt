@@ -1,0 +1,54 @@
+=== R22 run 1 ===
+Sort  (cost=127907.82..128722.55 rows=325894 width=16) (actual time=530.408..531.860 rows=36000.00 loops=1)
+  Sort Key: (count(*)) DESC, playlist_id
+  Sort Method: quicksort  Memory: 2662kB
+  Buffers: shared hit=6 read=6545
+  ->  GroupAggregate  (cost=0.43..92493.64 rows=325894 width=16) (actual time=0.463..517.024 rows=36000.00 loops=1)
+        Group Key: track_id, playlist_id
+        Filter: (count(*) > 1)
+        Rows Removed by Filter: 2328008
+        Buffers: shared read=6545
+        ->  Index Only Scan using ix_playlist_tracks_track on playlist_tracks  (cost=0.43..62272.55 rows=2400008 width=8) (actual time=0.447..181.631 rows=2400008.00 loops=1)
+              Heap Fetches: 0
+              Index Searches: 1
+              Buffers: shared read=6545
+Planning:
+  Buffers: shared hit=119 read=3
+Planning Time: 0.809 ms
+Execution Time: 533.198 ms
+=== R22 run 2 ===
+Sort  (cost=127907.82..128722.55 rows=325894 width=16) (actual time=538.252..542.555 rows=36000.00 loops=1)
+  Sort Key: (count(*)) DESC, playlist_id
+  Sort Method: quicksort  Memory: 2662kB
+  Buffers: shared hit=6551
+  ->  GroupAggregate  (cost=0.43..92493.64 rows=325894 width=16) (actual time=0.101..519.725 rows=36000.00 loops=1)
+        Group Key: track_id, playlist_id
+        Filter: (count(*) > 1)
+        Rows Removed by Filter: 2328008
+        Buffers: shared hit=6545
+        ->  Index Only Scan using ix_playlist_tracks_track on playlist_tracks  (cost=0.43..62272.55 rows=2400008 width=8) (actual time=0.085..172.543 rows=2400008.00 loops=1)
+              Heap Fetches: 0
+              Index Searches: 1
+              Buffers: shared hit=6545
+Planning:
+  Buffers: shared hit=122
+Planning Time: 0.666 ms
+Execution Time: 543.675 ms
+=== R22 run 3 ===
+Sort  (cost=127907.82..128722.55 rows=325894 width=16) (actual time=504.338..505.601 rows=36000.00 loops=1)
+  Sort Key: (count(*)) DESC, playlist_id
+  Sort Method: quicksort  Memory: 2662kB
+  Buffers: shared hit=6551
+  ->  GroupAggregate  (cost=0.43..92493.64 rows=325894 width=16) (actual time=0.148..491.342 rows=36000.00 loops=1)
+        Group Key: track_id, playlist_id
+        Filter: (count(*) > 1)
+        Rows Removed by Filter: 2328008
+        Buffers: shared hit=6545
+        ->  Index Only Scan using ix_playlist_tracks_track on playlist_tracks  (cost=0.43..62272.55 rows=2400008 width=8) (actual time=0.129..158.776 rows=2400008.00 loops=1)
+              Heap Fetches: 0
+              Index Searches: 1
+              Buffers: shared hit=6545
+Planning:
+  Buffers: shared hit=122
+Planning Time: 0.555 ms
+Execution Time: 506.846 ms

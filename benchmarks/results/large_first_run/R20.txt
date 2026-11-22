@@ -1,0 +1,102 @@
+=== R20 run 1 ===
+Finalize GroupAggregate  (cost=134120.74..134150.45 rows=96 width=43) (actual time=1324.562..1331.831 rows=96.00 loops=1)
+  Group Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+  Buffers: shared hit=28 read=58057, temp read=21101 written=21128
+  ->  Gather Merge  (cost=134120.74..134147.52 rows=230 width=43) (actual time=1324.556..1331.770 rows=288.00 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=28 read=58057, temp read=21101 written=21128
+        ->  Sort  (cost=133120.71..133120.95 rows=96 width=43) (actual time=1320.259..1320.275 rows=96.00 loops=3)
+              Sort Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+              Sort Method: quicksort  Memory: 28kB
+              Buffers: shared hit=28 read=58057, temp read=21101 written=21128
+              Worker 0:  Sort Method: quicksort  Memory: 28kB
+              Worker 1:  Sort Method: quicksort  Memory: 28kB
+              ->  Partial HashAggregate  (cost=133116.35..133117.55 rows=96 width=43) (actual time=1320.156..1320.177 rows=96.00 loops=3)
+                    Group Key: u.country_code, EXTRACT(hour FROM s.started_at)
+                    Batches: 1  Memory Usage: 32kB
+                    Buffers: shared read=58057, temp read=21101 written=21128
+                    Worker 0:  Batches: 1  Memory Usage: 32kB
+                    Worker 1:  Batches: 1  Memory Usage: 32kB
+                    ->  Parallel Hash Join  (cost=13607.00..117491.71 rows=2083285 width=35) (actual time=413.539..1005.068 rows=1666666.67 loops=3)
+                          Hash Cond: (s.user_id = u.user_id)
+                          Buffers: shared read=58057, temp read=21101 written=21128
+                          ->  Parallel Seq Scan on streams s  (cost=0.00..71884.85 rows=2083285 width=12) (actual time=0.107..143.985 rows=1666666.67 loops=3)
+                                Buffers: shared read=51052
+                          ->  Parallel Hash  (cost=9505.00..9505.00 rows=250000 width=7) (actual time=44.620..44.621 rows=200000.00 loops=3)
+                                Buckets: 262144  Batches: 4  Memory Usage: 7968kB
+                                Buffers: shared read=7005, temp written=1556
+                                ->  Parallel Seq Scan on users u  (cost=0.00..9505.00 rows=250000 width=7) (actual time=0.074..16.974 rows=200000.00 loops=3)
+                                      Buffers: shared read=7005
+Planning:
+  Buffers: shared hit=326 read=50 dirtied=1
+Planning Time: 2.033 ms
+Execution Time: 1331.985 ms
+=== R20 run 2 ===
+Finalize GroupAggregate  (cost=134120.74..134150.45 rows=96 width=43) (actual time=1319.211..1322.819 rows=96.00 loops=1)
+  Group Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+  Buffers: shared hit=592 read=57493, temp read=21098 written=21128
+  ->  Gather Merge  (cost=134120.74..134147.52 rows=230 width=43) (actual time=1319.206..1322.776 rows=288.00 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=592 read=57493, temp read=21098 written=21128
+        ->  Sort  (cost=133120.71..133120.95 rows=96 width=43) (actual time=1315.969..1315.974 rows=96.00 loops=3)
+              Sort Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+              Sort Method: quicksort  Memory: 28kB
+              Buffers: shared hit=592 read=57493, temp read=21098 written=21128
+              Worker 0:  Sort Method: quicksort  Memory: 28kB
+              Worker 1:  Sort Method: quicksort  Memory: 28kB
+              ->  Partial HashAggregate  (cost=133116.35..133117.55 rows=96 width=43) (actual time=1315.860..1315.870 rows=96.00 loops=3)
+                    Group Key: u.country_code, EXTRACT(hour FROM s.started_at)
+                    Batches: 1  Memory Usage: 32kB
+                    Buffers: shared hit=564 read=57493, temp read=21098 written=21128
+                    Worker 0:  Batches: 1  Memory Usage: 32kB
+                    Worker 1:  Batches: 1  Memory Usage: 32kB
+                    ->  Parallel Hash Join  (cost=13607.00..117491.71 rows=2083285 width=35) (actual time=398.798..997.919 rows=1666666.67 loops=3)
+                          Hash Cond: (s.user_id = u.user_id)
+                          Buffers: shared hit=564 read=57493, temp read=21098 written=21128
+                          ->  Parallel Seq Scan on streams s  (cost=0.00..71884.85 rows=2083285 width=12) (actual time=0.105..139.169 rows=1666666.67 loops=3)
+                                Buffers: shared hit=282 read=50770
+                          ->  Parallel Hash  (cost=9505.00..9505.00 rows=250000 width=7) (actual time=42.944..42.945 rows=200000.00 loops=3)
+                                Buckets: 262144  Batches: 4  Memory Usage: 7968kB
+                                Buffers: shared hit=282 read=6723, temp written=1556
+                                ->  Parallel Seq Scan on users u  (cost=0.00..9505.00 rows=250000 width=7) (actual time=0.085..16.832 rows=200000.00 loops=3)
+                                      Buffers: shared hit=282 read=6723
+Planning:
+  Buffers: shared hit=376
+Planning Time: 1.179 ms
+Execution Time: 1323.004 ms
+=== R20 run 3 ===
+Finalize GroupAggregate  (cost=134120.74..134150.45 rows=96 width=43) (actual time=1470.858..1479.910 rows=96.00 loops=1)
+  Group Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+  Buffers: shared hit=1156 read=56929, temp read=21100 written=21136
+  ->  Gather Merge  (cost=134120.74..134147.52 rows=230 width=43) (actual time=1470.848..1479.864 rows=288.00 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=1156 read=56929, temp read=21100 written=21136
+        ->  Sort  (cost=133120.71..133120.95 rows=96 width=43) (actual time=1467.901..1467.921 rows=96.00 loops=3)
+              Sort Key: u.country_code, (EXTRACT(hour FROM s.started_at))
+              Sort Method: quicksort  Memory: 28kB
+              Buffers: shared hit=1156 read=56929, temp read=21100 written=21136
+              Worker 0:  Sort Method: quicksort  Memory: 28kB
+              Worker 1:  Sort Method: quicksort  Memory: 28kB
+              ->  Partial HashAggregate  (cost=133116.35..133117.55 rows=96 width=43) (actual time=1467.795..1467.819 rows=96.00 loops=3)
+                    Group Key: u.country_code, EXTRACT(hour FROM s.started_at)
+                    Batches: 1  Memory Usage: 32kB
+                    Buffers: shared hit=1128 read=56929, temp read=21100 written=21136
+                    Worker 0:  Batches: 1  Memory Usage: 32kB
+                    Worker 1:  Batches: 1  Memory Usage: 32kB
+                    ->  Parallel Hash Join  (cost=13607.00..117491.71 rows=2083285 width=35) (actual time=431.704..1114.712 rows=1666666.67 loops=3)
+                          Hash Cond: (s.user_id = u.user_id)
+                          Buffers: shared hit=1128 read=56929, temp read=21100 written=21136
+                          ->  Parallel Seq Scan on streams s  (cost=0.00..71884.85 rows=2083285 width=12) (actual time=0.086..149.755 rows=1666666.67 loops=3)
+                                Buffers: shared hit=564 read=50488
+                          ->  Parallel Hash  (cost=9505.00..9505.00 rows=250000 width=7) (actual time=43.999..43.999 rows=200000.00 loops=3)
+                                Buckets: 262144  Batches: 4  Memory Usage: 7968kB
+                                Buffers: shared hit=564 read=6441, temp written=1556
+                                ->  Parallel Seq Scan on users u  (cost=0.00..9505.00 rows=250000 width=7) (actual time=0.072..17.142 rows=200000.00 loops=3)
+                                      Buffers: shared hit=564 read=6441
+Planning:
+  Buffers: shared hit=376
+Planning Time: 1.189 ms
+Execution Time: 1480.014 ms
